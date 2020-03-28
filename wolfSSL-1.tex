@@ -1,0 +1,122 @@
+\documentclass[a4paper,12pt]{report}
+\usepackage[utf8]{inputenc}
+\usepackage{imakeidx}
+\usepackage{graphicx}
+\usepackage{float} %required for the placement specifier H
+\usepackage{multicol}		%multicolumns
+\makeindex[columns=3]
+
+\pagenumbering{roman}
+
+%opening
+\title{WolfSSL}
+\author{Luca Valentini}
+\date{Insert Date}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+
+
+\newpage
+\begin{abstract}
+ Explanation of this article. Must be a synthesis
+\end{abstract}
+
+
+\pagenumbering{arabic}
+\chapter{SSL Protocol}
+
+\section{Introduction}
+The SSL protool is a client/server protocol that provides the following basic security services to the communicating peers:
+\begin{itemize}
+	\item Authentication (both peer entity anda data origin authentication) services
+	\item Connection confidentiality services
+	\item Connection integrity services
+\end{itemize}
+
+The SSL protocol is sockets-oriented, meaning that all or none of the data that is sent to or received from a network connection is cryptographically protected in exactly the same way. It can be best viewed as an intermediate layer between the transporrt and the application layer that serves two purposes:
+\begin{itemize}
+	\item Establish a secure connection between the commucating peers
+	\item Use this connection to securely trasmit giher-layer protocol data from the sender to the reciever. It therefore fragments the data in pieces called fragments; each fragment is optionally compressed, authenticated, encrypted, prepended with a header, and transmitted to the reciever. Each data fragment prepared this way is sent in a distinct SSL record.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{subLayer_subProtocols.png}
+    \caption{The SSL with its (sub)layer and (sub)protocols}
+    \label{fig:galaxy}
+\end{figure}
+
+The SSL consists of two sublayers and a few subprotocols:
+\begin{itemize}
+	\item The lower sublayer is stacked on top of some connection-oriented and reliable transport layer protocol. This layer basically comprises the SSL record protocol that is used for the encapsulation of the higher-layer protocol data.
+	\item The higher sublayer is stacked on top of the SSL record protocol and comprises four subprotocols.
+
+	\begin{itemize}
+		\item The \emph{SSL handshake protocol} is the core subprotocol of SSL. It is used for establishment of a secure connection. It allows the communicating peers to authenticate each other and to negotiate a cipher suite and a compression method.
+		\item The \emph{SSL change cipher spec protocol} is used to put the parameters, set by the SSL handshake protocol in place and make them effective.
+		\item The \emph{SSL alert protocol} allows the communicating peers to signal indicators of potential problems and send respective alert messages to each other.
+		\item The \emph{SSL application data protocol} is used for the secure transmission of application data.
+	\end{itemize}
+
+\end{itemize}
+
+In spite of the fact that SSL consists of several subprotocols, we use the term \emph{SSL protocol} to refer to all of them simultaneously.
+
+\section{Valutare se aggiungere qualcosa su SSL. Non vorrei andare fuori tema }
+***********Valutare se aggiungere qualcosa su SSL. Non vorrei andare fuori tema ***********
+
+
+\chapter{Mettere l'handshake nel capitolo 1}
+
+\chapter{Wolf SSL}
+The wolfSSL embedded SSL library is a lightweight SSL/TLS library written in ANSI C and targeted for embedded, RTOS, and resource-constrained
+environments - primarily because of its small size, speed, and feature set.
+\\It's free and it has an excellent cross platform support.
+\\WolfSSL supports standards up to the current TLS 1.3 and DTLS 1.2 levels, is up to
+20 times smaller than OpenSSL and it's powered by the colfCrypt library.
+
+\vspace{5mm} %5mm vertical space
+This library is built for maximum portability and supports the C programming language as a primary interface. It also supports several other host languages, including Java (wolfSSL JNI), C\# (wolfSSL C\#), Python, and PHP and Perl.
+
+\vspace{5mm} %5mm vertical space
+To improve performance it supports hardware cryptography and acceleration on several platforms.
+
+\vspace{5mm} %5mm vertical space
+In the following list you can see some of WolfSSI’s features:
+\begin{itemize}
+\item Runtime memory usage between 1-36 kB
+\item OpenSSl compatibility layer
+\item Hash Functions: \begin{multicols}{3}\begin{itemize}
+\item MD2
+\item MD4
+\item MD5
+\item SHA-1
+\item SHA-224
+\item SHA-256
+\item SHA-384
+\item SHA-512
+\item BLAKE2b
+\item RIPEMD-160
+\item Poly1305
+\end{itemize}
+\end{multicols}
+\item Mutual authentication support (client/server)
+\item SSL Sniffer (SSL Inspection) Support
+\item IPv4 and IPv6 support
+
+
+\end{itemize}
+
+\cleardoublepage
+The operating systems supported are:
+\begin{multicols}{3}
+\begin{enumerate}
+\item Win32/64 \item Linux \item Mac OS X \item Solaris \item ThreadX \item VxWorks \item FreeBSD \item NetBSD \item OpenBSD \item embedded Linux \item Yocto Linux \item OpenEmbedded \item WinCE \item Haiku \item OpenWRT \item iPhone(iOS) \item Android \item Nintendo Wii and Gamecube through DevKitPro \item QNX \item MontaVista \item NonStop \item TRON / ITRON /  ITRON \item Micrium  C / OS - III \item FreeRTOS \item SafeRTOS \item NXP / Freescale MQX \item Nucleus \item TinyOS \item HP / UX \item AIX \item ARC MQX \item TI - RTOS \item uTasker \item embOS \item INtime \item Mbed \item uT - Kernel \item RIOT \item CMSIS -RTOS \item FROSTED \item Green Hills INTEGRITY \item Keil RTX \item TOPPERS \item PetaLinux \item Apache Mynewt \item PikeOS 
+\end{enumerate}
+\end{multicols}
+
+
+\end{document}
