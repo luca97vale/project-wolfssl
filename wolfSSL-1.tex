@@ -65,11 +65,45 @@ The SSL consists of two sublayers and a few subprotocols:
 
 In spite of the fact that SSL consists of several subprotocols, we use the term \emph{SSL protocol} to refer to all of them simultaneously.
 
-\section{Valutare se aggiungere qualcosa su SSL. Non vorrei andare fuori tema }
-***********Valutare se aggiungere qualcosa su SSL. Non vorrei andare fuori tema ***********
+\section{SSL Handshake}
+The SSL handshake protocol is layered on top of the SSL record protocol. It allows a client and server to authenticate each other and to negotiate issues like cipher suites and compression methods.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.7]{handshake.png}
+    \caption{The SSL handshake protocol}
+    \label{fig:galaxy}
+\end{figure}
 
-\chapter{Mettere l'handshake nel capitolo 1}
+\vspace{5mm} %5mm vertical space
+The SSL handshake protocol comprises four sets of messages:
+\begin{itemize}
+\item The first flight comprises a single \emph{ClientHello} message that is sent from the client to the server.
+\item The second flight comprises two messages that are sent back from the server to the client:
+\begin{enumerate}
+\item \emph{ServerHello} message is sent in response to the \emph{ClientHello} message
+\item (optional) If the server is to authenticate itself, it may send a \emph{Certificate} message to the client.
+\item (optional) Under some circumstances, the server may send a \emph{ServerKeyExchange} message to the client.
+\item (optional) If the server requires the client to authenticate itself with a public key certificate, then it may send a \emph{CertificateRequest} message to the client.
+\item Finally, server send a \emph{ServerHelloDone} message to the client.
+\end{enumerate}
+\item The third flight comprises three to five messages that are again sent from the client to the server:
+\begin{enumerate}
+\item (optional) If the server has sent a \emph{CertificateRequest} message, then the client sends a \emph{Certificate} message to the server.
+\item In the main step of the protocol, the client sends a \emph{ClientKeyExchange} message to the server.
+\item (optional) If the client has sent a certificate to the server, then it must also send a \emph{CertificateVerify} message to the server. This message is digitally signed with the private key that corresponds to the client certificate's public key.
+\item The client sends a \emph{ChangeCipherSpec} message to the server (using the SSL change cipher spec protocol) and copies its pending write state into the current write state.
+\item The client sends a \emph{Finished} message to the server. As mentioned above, this is the first message that is cryptographically protected under the new cipher spec.
+\end{enumerate}
+\item The fourth flight comprises two messages that are sent from the server back to the client:
+\begin{enumerate}
+\item The server sends another \emph{ChangeCipherSpec} message to the client and copies its pending write state into the current write state.
+\item Finally, the server send a \emph{Finished} message to the client. Again, this message is cryptographically protected under the new cipher spec.
+
+\end{enumerate}
+\end{itemize}
+
+At this point in time, the SSL handshake is complete and the client and server may start exchanging application-layer data.
 
 \chapter{Wolf SSL}
 The wolfSSL embedded SSL library is a lightweight SSL/TLS library written in ANSI C and targeted for embedded, RTOS, and resource-constrained
@@ -117,6 +151,31 @@ The operating systems supported are:
 \item Win32/64 \item Linux \item Mac OS X \item Solaris \item ThreadX \item VxWorks \item FreeBSD \item NetBSD \item OpenBSD \item embedded Linux \item Yocto Linux \item OpenEmbedded \item WinCE \item Haiku \item OpenWRT \item iPhone(iOS) \item Android \item Nintendo Wii and Gamecube through DevKitPro \item QNX \item MontaVista \item NonStop \item TRON / ITRON /  ITRON \item Micrium  C / OS - III \item FreeRTOS \item SafeRTOS \item NXP / Freescale MQX \item Nucleus \item TinyOS \item HP / UX \item AIX \item ARC MQX \item TI - RTOS \item uTasker \item embOS \item INtime \item Mbed \item uT - Kernel \item RIOT \item CMSIS -RTOS \item FROSTED \item Green Hills INTEGRITY \item Keil RTX \item TOPPERS \item PetaLinux \item Apache Mynewt \item PikeOS 
 \end{enumerate}
 \end{multicols}
+
+\chapter{Test case}
+\section{Client/Server provided by WolSSL}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{test/examples/client-server/server.png}
+    \caption{Server SSL}
+    \label{fig:galaxy}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.45]{test/examples/client-server/client.png}
+    \caption{Client SSL}
+    \label{fig:galaxy}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{test/examples/client-server/wireshark1.png}
+    \caption{All SSL packets sent}
+    \label{fig:galaxy}
+\end{figure}
+
 
 
 \end{document}
