@@ -1,0 +1,16 @@
+workplan WolfSSL Luca Valentini:
+
+This is the simplified index of my thesis about WolfSSL
+
+1)SSL protocol
+	-brief introduction to the basic concepts of ssl
+2)WolfSSL
+	-explanation of WolfSSL characteristics.
+3)Test case
+	-test case found in WolfSSl library, including wireshark screenshot.
+4)My application
+	-Application that exchanges messages between a laptop and Raspberry Pi (using linux in both systems), showing the difference between a TCP application and TLS application, including wireshark screenshot.
+
+5)test for comparsion with openSSL
+
+6)Conclusion
