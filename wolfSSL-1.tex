@@ -4,6 +4,8 @@
 \usepackage{graphicx}
 \usepackage{float} %required for the placement specifier H
 \usepackage{multicol}		%multicolumns
+\usepackage{tabto}
+
 \makeindex[columns=3]
 
 \pagenumbering{roman}
@@ -162,12 +164,18 @@ The operating systems supported are:
     \label{fig:galaxy}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[H]+
     \centering
     \includegraphics[scale=0.45]{test/examples/client-server/client.png}
     \caption{Client SSL}
     \label{fig:galaxy}
 \end{figure}
+
+In this example, the server is a simple SSL server that allows only one client connection; after the connection with a client, the server receives an encrypted message from client, it responds and quits.
+\\The -b parameter allows the server to bind to any interface instead of localhost only.
+\\
+\\The client after the connection with the server, sends a message (hello wolfssl!) and after the server response, it quits.
+\\The -h parameter allows the client to specify the server address to perform the connection.
 
 \begin{figure}[H]
     \centering
@@ -175,6 +183,18 @@ The operating systems supported are:
     \caption{All SSL packets sent}
     \label{fig:galaxy}
 \end{figure}
+Client IP:  192.168.0.47 \hspace{4cm} Server IP: 192.168.0.254\\ \\
+Come si puo' bene vedere dalla figura soprastante, la comunicazione viene iniziata dal client con un 'Client Hello'; dopo SSL handshake, ci sono due messaggi 'Application Data' inviati rispettivamente dal client verso il server e dal server verso il client il cui contenuto e' cifrato. Una volta che il server invia la risposta al client, la comunicazione viene chiusa attraverso 'Encrypted Alert'.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.3]{test/examples/client-server/encrypted_data.png}
+    \caption{Content of the encrypted message}
+    \label{fig:galaxy}
+\end{figure}
+
+Come si puo' vedere, lo scambio di messaggi e' cifrato.
+
 
 \pagebreak
 

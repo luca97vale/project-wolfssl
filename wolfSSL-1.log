@@ -1,0 +1,301 @@
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (MiKTeX 2.9.7350) (preloaded format=pdflatex 2020.3.21)  2 MAY 2020 17:47
+entering extended mode
+**/home/luca/Documents/latex/miktex/project-wolfssl/wolfSSL-1.tex
+(/home/luca/Documents/latex/miktex/project-wolfssl/wolfSSL-1.tex
+LaTeX2e <2020-02-02> patch level 5
+L3 programming layer <2020-03-06>
+(/home/luca/.miktex/texmfs/install/tex/latex/base/report.cls
+Document Class: report 2019/12/20 v1.4l Standard LaTeX document class
+(/home/luca/.miktex/texmfs/install/tex/latex/base/size12.clo
+File: size12.clo 2019/12/20 v1.4l Standard LaTeX file (size option)
+)
+\c@part=\count167
+\c@chapter=\count168
+\c@section=\count169
+\c@subsection=\count170
+\c@subsubsection=\count171
+\c@paragraph=\count172
+\c@subparagraph=\count173
+\c@figure=\count174
+\c@table=\count175
+\abovecaptionskip=\skip47
+\belowcaptionskip=\skip48
+\bibindent=\dimen134
+)
+(/home/luca/.miktex/texmfs/install/tex/latex/base/inputenc.sty
+Package: inputenc 2018/08/11 v1.3c Input encoding file
+\inpenc@prehook=\toks15
+\inpenc@posthook=\toks16
+)
+(/home/luca/.miktex/texmfs/install/tex/latex/imakeidx/imakeidx.sty
+Package: imakeidx 2016/10/15 v1.3e Package for typesetting indices in a synchro
+nous mode
+
+(/home/luca/.miktex/texmfs/install/tex/latex/xkeyval/xkeyval.sty
+Package: xkeyval 2014/12/03 v2.7a package option processing (HA)
+
+(/home/luca/.miktex/texmfs/install/tex/generic/xkeyval/xkeyval.tex
+(/home/luca/.miktex/texmfs/install/tex/generic/xkeyval/xkvutils.tex
+\XKV@toks=\toks17
+\XKV@tempa@toks=\toks18
+
+(/home/luca/.miktex/texmfs/install/tex/generic/xkeyval/keyval.tex))
+\XKV@depth=\count176
+File: xkeyval.tex 2014/12/03 v2.7a key=value parser (HA)
+))
+(/home/luca/.miktex/texmfs/install/tex/generic/iftex/ifxetex.sty
+Package: ifxetex 2019/10/25 v0.7 ifxetex legacy package. Use iftex instead.
+
+(/home/luca/.miktex/texmfs/install/tex/generic/iftex/iftex.sty
+Package: iftex 2020/03/06 v1.0d TeX engine tests
+))
+(/home/luca/.miktex/texmfs/install/tex/generic/iftex/ifluatex.sty
+Package: ifluatex 2019/10/25 v1.5 ifluatex legacy package. Use iftex instead.
+)
+(/home/luca/.miktex/texmfs/install/tex/latex/tools/multicol.sty
+Package: multicol 2019/12/09 v1.8y multicolumn formatting (FMi)
+\c@tracingmulticols=\count177
+\mult@box=\box45
+\multicol@leftmargin=\dimen135
+\c@unbalance=\count178
+\c@collectmore=\count179
+\doublecol@number=\count180
+\multicoltolerance=\count181
+\multicolpretolerance=\count182
+\full@width=\dimen136
+\page@free=\dimen137
+\premulticols=\dimen138
+\postmulticols=\dimen139
+\multicolsep=\skip49
+\multicolbaselineskip=\skip50
+\partial@page=\box46
+\last@line=\box47
+\maxbalancingoverflow=\dimen140
+\mult@rightbox=\box48
+\mult@grightbox=\box49
+\mult@gfirstbox=\box50
+\mult@firstbox=\box51
+\@tempa=\box52
+\@tempa=\box53
+\@tempa=\box54
+\@tempa=\box55
+\@tempa=\box56
+\@tempa=\box57
+\@tempa=\box58
+\@tempa=\box59
+\@tempa=\box60
+\@tempa=\box61
+\@tempa=\box62
+\@tempa=\box63
+\@tempa=\box64
+\@tempa=\box65
+\@tempa=\box66
+\@tempa=\box67
+\@tempa=\box68
+\@tempa=\box69
+\@tempa=\box70
+\@tempa=\box71
+\@tempa=\box72
+\@tempa=\box73
+\@tempa=\box74
+\@tempa=\box75
+\@tempa=\box76
+\@tempa=\box77
+\@tempa=\box78
+\@tempa=\box79
+\@tempa=\box80
+\@tempa=\box81
+\@tempa=\box82
+\@tempa=\box83
+\@tempa=\box84
+\@tempa=\box85
+\@tempa=\box86
+\@tempa=\box87
+\@tempa=\box88
+\c@minrows=\count183
+\c@columnbadness=\count184
+\c@finalcolumnbadness=\count185
+\last@try=\dimen141
+\multicolovershoot=\dimen142
+\multicolundershoot=\dimen143
+\mult@nat@firstbox=\box89
+\colbreak@box=\box90
+\mc@col@check@num=\count186
+))
+(/home/luca/.miktex/texmfs/install/tex/latex/graphics/graphicx.sty
+Package: graphicx 2019/11/30 v1.2a Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/home/luca/.miktex/texmfs/install/tex/latex/graphics/graphics.sty
+Package: graphics 2019/11/30 v1.4a Standard LaTeX Graphics (DPC,SPQR)
+
+(/home/luca/.miktex/texmfs/install/tex/latex/graphics/trig.sty
+Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
+)
+(/home/luca/.miktex/texmfs/install/tex/latex/graphics-cfg/graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 105.
+
+(/home/luca/.miktex/texmfs/install/tex/latex/graphics-def/pdftex.def
+File: pdftex.def 2018/01/08 v1.0l Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen144
+\Gin@req@width=\dimen145
+)
+(/home/luca/.miktex/texmfs/install/tex/latex/float/float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count187
+\float@exts=\toks19
+\float@box=\box91
+\@float@everytoks=\toks20
+\@floatcapt=\box92
+)
+(/home/luca/.miktex/texmfs/install/tex/latex/tabto-ltx/tabto.sty
+Package: tabto 2018/12/28  v 1.4  Another tabbing mechanism
+\CurrentLineWidth=\dimen146
+\TabPrevPos=\dimen147
+)
+\wolfSSL-1@idxfile=\write3
+\openout3 = `wolfSSL-1.idx'.
+
+
+Writing index file wolfSSL-1.idx
+(/home/luca/.miktex/texmfs/install/tex/latex/l3backend/l3backend-pdfmode.def
+File: l3backend-pdfmode.def 2020-03-12 L3 backend support: PDF mode
+\l__kernel_color_stack_int=\count188
+\l__pdf_internal_box=\box93
+)
+No file wolfSSL-1.aux.
+\openout1 = `wolfSSL-1.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+(/home/luca/.miktex/texmfs/install/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count189
+\scratchdimen=\dimen148
+\scratchbox=\box94
+\nofMPsegments=\count190
+\nofMParguments=\count191
+\everyMPshowfont=\toks21
+\MPscratchCnt=\count192
+\MPscratchDim=\dimen149
+\MPnumerator=\count193
+\makeMPintoPDFobject=\count194
+\everyMPtoPDFconversion=\toks22
+) (/home/luca/.miktex/texmfs/install/tex/latex/epstopdf-pkg/epstopdf-base.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+85.
+)
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <14.4> on input line 19.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 19.
+
+[1
+
+{/home/luca/.miktex/texmfs/data/pdftex/config/pdftex.map
+
+pdfTeX warning: pdflatex (file /home/luca/.miktex/texmfs/data/pdftex/config/pdf
+tex.map): invalid entry for `pplrr8re': unknown name `.2' ignored
+
+
+pdfTeX warning: pdflatex (file /home/luca/.miktex/texmfs/data/pdftex/config/pdf
+tex.map): invalid entry for `pplrr8ye': unknown name `.2' ignored
+
+
+pdfTeX warning: pdflatex (file /home/luca/.miktex/texmfs/data/pdftex/config/pdf
+tex.map): invalid entry for `ptmrr8re': unknown name `.2' ignored
+
+
+pdfTeX warning: pdflatex (file /home/luca/.miktex/texmfs/data/pdftex/config/pdf
+tex.map): invalid entry for `ptmrr8ye': unknown name `.2' ignored
+
+
+pdfTeX warning: pdflatex (file /home/luca/.miktex/texmfs/data/pdftex/config/pdf
+tex.map): invalid entry for `rpplrre': unknown name `.2' ignored
+
+
+pdfTeX warning: pdflatex (file /home/luca/.miktex/texmfs/data/pdftex/config/pdf
+tex.map): invalid entry for `rptmrre': unknown name `.2' ignored
+}]
+No file wolfSSL-1.toc.
+\tf@toc=\write4
+\openout4 = `wolfSSL-1.toc'.
+
+[1
+
+] [1]
+Chapter 1.
+
+Overfull \hbox (11.90694pt too wide) in paragraph at lines 36--37
+[]\OT1/cmr/m/n/12 Authentication (both peer entity anda data origin authenticat
+ion) services 
+ []
+
+
+Overfull \hbox (8.1903pt too wide) in paragraph at lines 41--42
+\OT1/cmr/m/n/12 layer between the transporrt and the application layer that ser
+ves two purposes: 
+ []
+
+
+Overfull \hbox (3.59915pt too wide) in paragraph at lines 44--45
+\OT1/cmr/m/n/12 called fragments; each fragment is optionally compressed, authe
+nticated,
+ []
+
+<subLayer_subProtocols.png, id=14, 816.04875pt x 561.09625pt>
+File: subLayer_subProtocols.png Graphic file (type png)
+<use subLayer_subProtocols.png>
+Package pdftex.def Info: subLayer_subProtocols.png  used on input line 49.
+(pdftex.def)             Requested size: 408.02338pt x 280.54744pt.
+
+Overfull \hbox (18.02338pt too wide) in paragraph at lines 49--50
+ [][] 
+ []
+
+[1
+
+]
+Overfull \hbox (5.60844pt too wide) in paragraph at lines 61--62
+\OT1/cmr/m/n/12 set by the SSL handshake protocol in place and make them effect
+ive. 
+ []
+
+
+Overfull \hbox (8.12381pt too wide) in paragraph at lines 63--64
+[]\OT1/cmr/m/n/12 The \OT1/cmr/m/it/12 SSL application data protocol \OT1/cmr/m
+/n/12 is used for the secure transmission
+ []
+
+[2
+! pdfTeX error (\pdfsetmatrix): Unrecognized format..
+<to be read again> 
+                   \endgroup \set@typeset@protect 
+l.64 	\end{itemize}
+                   
+
+ 
+Here is how much of TeX's memory you used:
+ 1795 strings out of 482862
+ 26992 string characters out of 2953105
+ 261744 words of memory out of 3000000
+ 17430 multiletter control sequences out of 15000+200000
+ 536051 words of font info for 36 fonts, out of 3000000 for 9000
+ 0 hyphenation exceptions out of 8191
+ 30i,6n,32p,441b,262s stack positions out of 5000i,500n,10000p,200000b,50000s
+!  ==> Fatal error occurred, no output PDF file produced!
