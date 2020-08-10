@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <ncurses.h>
+
 /* socket includes */
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -58,7 +60,7 @@ void *writeBuffer(void *args)
     {
         /* Get a message for the server from stdin */
         memset(buff, 0, sizeof(buff));
-        if (fgets(buff, sizeof(buff), stdin) == NULL)
+        if(getstr(buff))
         {
             fprintf(stderr, "ERROR: failed to get message for server\n");
             return NULL;
@@ -94,7 +96,8 @@ void *readBuffer(void *args)
         else
         {
             /* Print to stdout any data the server sends */
-            printf("Server: %s", buffReader);
+            printw("Server: %s", buffReader);
+            refresh();
         }
     }
     return NULL;
@@ -105,8 +108,9 @@ void *client(void *args)
     struct sockaddr_in servAddr;
     char username[20];
 
-    printf("Set your username: ");
-    if (fgets(username, sizeof(username), stdin) == NULL)
+    printw("Set your username: ");
+    refresh();
+    if(getstr(username))
     {
         fprintf(stderr, "ERROR: failed to get message for server\n");
         return NULL;
@@ -221,7 +225,8 @@ void *client(void *args)
 int main(int argc, char **argv)
 {
     pthread_t Tclient;
-
+    initscr();			/* Start curses mode 		*/
+    scrollok(new,TRUE);
     /* Check for proper calling convention */
     if (argc != 2)
     {
