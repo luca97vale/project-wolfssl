@@ -43,18 +43,67 @@
 
 //Global variables
 char *ip;
+/* declare wolfSSL objects */
+WOLFSSL_CTX *ctx;
+WOLFSSL *ssl;
+int sockfd;
+char buff[256];
+char buffReader[256];
+size_t len;
+int is_end = 0;
 
-void *client(void *a)
+void *writeBuffer(void *args)
 {
-    int sockfd;
-    struct sockaddr_in servAddr;
-    char buff[256];
-    char username[20];
-    size_t len;
+    while (!is_end)
+    {
+        /* Get a message for the server from stdin */
+        memset(buff, 0, sizeof(buff));
+        if (fgets(buff, sizeof(buff), stdin) == NULL)
+        {
+            fprintf(stderr, "ERROR: failed to get message for server\n");
+            return NULL;
+        }
+        len = strnlen(buff, sizeof(buff));
+        if (XSTRNCMP(buff, "quit", 4) == 0)
+        {
+            is_end = 1;
+            return NULL;
+        }
 
-    /* declare wolfSSL objects */
-    WOLFSSL_CTX *ctx;
-    WOLFSSL *ssl;
+        /* Send the message to the server */
+        if (wolfSSL_write(ssl, buff, len) != len)
+        {
+            fprintf(stderr, "ERROR: failed to write\n");
+            return NULL;
+        }
+    }
+    return NULL;
+}
+
+void *readBuffer(void *args)
+{
+    while (!is_end)
+    {
+        /* Read the server data into our buff array */
+        memset(buffReader, 0, sizeof(buffReader));
+        if (wolfSSL_read(ssl, buffReader, sizeof(buffReader) - 1) == -1)
+        {
+            fprintf(stderr, "ERROR: failed to read\n");
+            return NULL;
+        }
+        else
+        {
+            /* Print to stdout any data the server sends */
+            printf("Server: %s", buffReader);
+        }
+    }
+    return NULL;
+}
+
+void *client(void *args)
+{
+    struct sockaddr_in servAddr;
+    char username[20];
 
     printf("Set your username: ");
     if (fgets(username, sizeof(username), stdin) == NULL)
@@ -137,33 +186,29 @@ void *client(void *a)
         return NULL;
     }
 
-    /* Get a message for the server from stdin */
-    printf("Message for server: ");
-    memset(buff, 0, sizeof(buff));
-    if (fgets(buff, sizeof(buff), stdin) == NULL)
+    //create Thread Writer
+    pthread_t Twriter;
+    if (pthread_create(&Twriter, NULL, writeBuffer, NULL))
     {
-        fprintf(stderr, "ERROR: failed to get message for server\n");
-        return NULL;
-    }
-    len = strnlen(buff, sizeof(buff));
-
-    /* Send the message to the server */
-    if (wolfSSL_write(ssl, buff, len) != len)
-    {
-        fprintf(stderr, "ERROR: failed to write\n");
+        fprintf(stderr, "Error creating thread\n");
+        fflush(stdout);
         return NULL;
     }
 
-    /* Read the server data into our buff array */
-    memset(buff, 0, sizeof(buff));
-    if (wolfSSL_read(ssl, buff, sizeof(buff) - 1) == -1)
+    //create Thread Reader
+    pthread_t Treader;
+    if (pthread_create(&Treader, NULL, readBuffer, NULL))
     {
-        fprintf(stderr, "ERROR: failed to read\n");
+        fprintf(stderr, "Error creating thread\n");
+        fflush(stdout);
         return NULL;
     }
+    
+    pthread_join(Twriter, NULL);
+    pthread_join(Treader, NULL);
 
-    /* Print to stdout any data the server sends */
-    printf("Server: %s\n", buff);
+    printf("Communication is ended!\n");
+    fflush(stdout);
 
     /* Cleanup and return */
     wolfSSL_free(ssl);     /* Free the wolfSSL object                  */
@@ -175,7 +220,7 @@ void *client(void *a)
 
 int main(int argc, char **argv)
 {
-    pthread_t Twrite;
+    pthread_t Tclient;
 
     /* Check for proper calling convention */
     if (argc != 2)
@@ -187,8 +232,7 @@ int main(int argc, char **argv)
     ip = argv[1];
 
     /* create a second thread which executes inc_x(&x) */
-    int a = 0;
-    if (pthread_create(&Twrite, NULL, client, (void *)&a))
+    if (pthread_create(&Tclient, NULL, client, NULL))
     {
 
         fprintf(stderr, "Error creating thread\n");
@@ -196,7 +240,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if (pthread_join(Twrite, NULL))
+    if (pthread_join(Tclient, NULL))
     {
 
         fprintf(stderr, "Error joining thread\n");

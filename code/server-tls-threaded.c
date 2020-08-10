@@ -55,15 +55,95 @@ struct targ_pkg
     int *shutdown;
 };
 
+//Global Variables
+WOLFSSL *ssl;
+size_t len;
+char buff[256];
+char buffReader[256];
+char username[256];
+struct targ_pkg *pkg;
+
+void *readBuffer(void *args)
+{
+    int ret;
+    while (1)
+    {
+        /* Read the client data into our buff array */
+        XMEMSET(buffReader, 0, sizeof(buffReader));
+        /*do
+        {*/
+        fflush(stdout);
+        ret = wolfSSL_read(ssl, buffReader, sizeof(buffReader) - 1);
+        fflush(stdout);
+        fflush(stdout);
+        /* TODO: Currently this thread can get stuck infinitely if client
+         *       disconnects, add timer to abort on a timeout eventually,
+         *       just an example for now so allow for possible stuck condition
+         */
+        //} while (wolfSSL_want_read(ssl));
+
+        if (ret > 0)
+        {
+            /* Print to stdout any data the client sends */
+            printf("%s: %s", username, buffReader);
+            fflush(stdout);
+        }
+        else
+        {
+            printf("wolfSSL_read encountered an error with code %d and msg %s\n",
+                   ret, wolfSSL_ERR_error_string(ret, buffReader));
+            wolfSSL_free(ssl);  /* Free the wolfSSL object              */
+            close(pkg->connd);  /* Close the connection to the server   */
+            pkg->open = 1;      /* Indicate that execution is over      */
+            pthread_exit(NULL); /* End theread execution                */
+        }
+
+        /* Check for server shutdown command */
+        if (XSTRNCMP(buffReader, "shutdown", 8) == 0)
+        {
+            printf("Shutdown command issued!\n");
+            *pkg->shutdown = 1;
+        }
+    }
+}
+
+void *writeBuffer(void *args)
+{
+    int ret;
+    while (1)
+    {
+        if (fgets(buff, sizeof(buff), stdin) == NULL)
+        {
+            fprintf(stderr, "ERROR: failed to get message for server\n");
+            return NULL;
+        }
+        /* Write our reply into buff */
+        //XMEMSET(buff, 0, sizeof(buff));
+        len = XSTRLEN(buff);
+        //XMEMCPY(buff, reply, len);
+
+        /* Reply back to the client */
+        do
+        {
+            ret = wolfSSL_write(ssl, buff, len);
+            /* TODO: Currently this thread can get stuck infinitely if client
+         *       disconnects, add timer to abort on a timeout eventually,
+         *       just an example for now so allow for possible stuck condition
+         */
+        } while (wolfSSL_want_write(ssl));
+
+        if (ret != len)
+        {
+            printf("wolfSSL_write encountered an error with code %d and msg %s\n",
+                   ret, wolfSSL_ERR_error_string(ret, buff));
+        }
+    }
+}
+
 void *ClientHandler(void *args)
 {
-    struct targ_pkg *pkg = args;
-    WOLFSSL *ssl;
-    char buff[256];
-    char username[256];
-    size_t len;
+    pkg = args;
     int ret;
-    const char *reply = "I hear ya fa shizzle!\n";
 
     printf("thread %d open for business\n", pkg->num);
 
@@ -99,20 +179,15 @@ void *ClientHandler(void *args)
     /*********************** USERNAME */
     /* Read the client data into our buff array */
     XMEMSET(buff, 0, sizeof(buff));
-    do
-    {
-        ret = wolfSSL_read(ssl, buff, sizeof(buff) - 1);
-        /* TODO: Currently this thread can get stuck infinitely if client
-         *       disconnects, add timer to abort on a timeout eventually,
-         *       just an example for now so allow for possible stuck condition
-         */
-    } while (wolfSSL_want_read(ssl));
+    ret = wolfSSL_read(ssl, buff, sizeof(buff) - 1);
 
     if (ret > 0)
     {
         /* Print to stdout any data the client sends */
-        strcpy(username,buff);
-        printf("Client %s connected successfully\n\n\n", username);
+        strcpy(username, buff);
+        printf("Client %s connected successfully\n", username);
+        printf("***************************\n");
+        fflush(stdout);
     }
     else
     {
@@ -124,68 +199,27 @@ void *ClientHandler(void *args)
         pthread_exit(NULL); /* End theread execution                */
     }
     /****************************    */
-
-    /* Read the client data into our buff array */
     XMEMSET(buff, 0, sizeof(buff));
-    do
+    //create Thread Reader
+    pthread_t Treader;
+    if (pthread_create(&Treader, NULL, readBuffer, NULL))
     {
-        ret = wolfSSL_read(ssl, buff, sizeof(buff) - 1);
-        /* TODO: Currently this thread can get stuck infinitely if client
-         *       disconnects, add timer to abort on a timeout eventually,
-         *       just an example for now so allow for possible stuck condition
-         */
-    } while (wolfSSL_want_read(ssl));
-
-    if (ret > 0)
-    {
-        /* Print to stdout any data the client sends */
-        printf(" %s - %s\n",username,buff);
-    }
-    else
-    {
-        printf("wolfSSL_read encountered an error with code %d and msg %s\n",
-               ret, wolfSSL_ERR_error_string(ret, buff));
-        wolfSSL_free(ssl);  /* Free the wolfSSL object              */
-        close(pkg->connd);  /* Close the connection to the server   */
-        pkg->open = 1;      /* Indicate that execution is over      */
-        pthread_exit(NULL); /* End theread execution                */
-    }
-
-    /* Check for server shutdown command */
-    if (XSTRNCMP(buff, "shutdown", 8) == 0)
-    {
-        printf("Shutdown command issued!\n");
-        *pkg->shutdown = 1;
-    }
-
-
-    if (fgets(buff, sizeof(buff), stdin) == NULL)
-    {
-        fprintf(stderr, "ERROR: failed to get message for server\n");
+        fprintf(stderr, "Error creating thread\n");
+        fflush(stdout);
         return NULL;
     }
 
-    /* Write our reply into buff */
-    //XMEMSET(buff, 0, sizeof(buff));
-    len = XSTRLEN(buff);
-    //XMEMCPY(buff, reply, len);
-
-    /* Reply back to the client */
-    do
+    //create Thread Writer
+    pthread_t Twriter;
+    if (pthread_create(&Twriter, NULL, writeBuffer, NULL))
     {
-        ret = wolfSSL_write(ssl, buff, len);
-        /* TODO: Currently this thread can get stuck infinitely if client
-         *       disconnects, add timer to abort on a timeout eventually,
-         *       just an example for now so allow for possible stuck condition
-         */
-    } while (wolfSSL_want_write(ssl));
-
-    if (ret != len)
-    {
-        printf("wolfSSL_write encountered an error with code %d and msg %s\n",
-               ret, wolfSSL_ERR_error_string(ret, buff));
+        fprintf(stderr, "Error creating thread\n");
+        fflush(stdout);
+        return NULL;
     }
 
+    pthread_join(Treader, NULL);
+    pthread_join(Twriter, NULL);
     /* Cleanup after this connection */
     wolfSSL_free(ssl);  /* Free the wolfSSL object              */
     close(pkg->connd);  /* Close the connection to the server   */
