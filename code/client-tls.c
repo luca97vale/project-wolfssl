@@ -39,6 +39,9 @@
 /* threads */
 #include <pthread.h>
 
+//ncurses
+#include "minitalk.c"
+
 #define DEFAULT_PORT 11111
 
 #define CERT_FILE "./certs/ca-cert.pem"
@@ -53,31 +56,34 @@ char buff[256];
 char buffReader[256];
 size_t len;
 int is_end = 0;
+char username[20];
+extern char Rbuffer[256];
 
 void *writeBuffer(void *args)
 {
     while (!is_end)
     {
         /* Get a message for the server from stdin */
-        memset(buff, 0, sizeof(buff));
-        if(getstr(buff))
+        memset(Rbuffer, 0, sizeof(Rbuffer));
+        read_in();
+        /*if(wgetstr(win,buff))
         {
             fprintf(stderr, "ERROR: failed to get message for server\n");
             return NULL;
-        }
-        len = strnlen(buff, sizeof(buff));
-        if (XSTRNCMP(buff, "quit", 4) == 0)
+        }*/
+        len = strnlen(Rbuffer, sizeof(Rbuffer));
+        if (XSTRNCMP(Rbuffer, "quit", 4) == 0)
         {
             is_end = 1;
-            return NULL;
         }
-
         /* Send the message to the server */
-        if (wolfSSL_write(ssl, buff, len) != len)
+        if (wolfSSL_write(ssl, Rbuffer, len) != len)
         {
             fprintf(stderr, "ERROR: failed to write\n");
             return NULL;
         }
+        wprintw(ncu.tchatWin, "[%s] %s\n", username, Rbuffer);
+        wrefresh(ncu.tchatWin);
     }
     return NULL;
 }
@@ -96,8 +102,10 @@ void *readBuffer(void *args)
         else
         {
             /* Print to stdout any data the server sends */
-            printw("Server: %s", buffReader);
-            refresh();
+            // wprintw(win,"Server: %s", buffReader);
+            //wrefresh(win);
+            wprintw(ncu.tchatWin, "[Server] %s\n", buffReader);
+            wrefresh(ncu.tchatWin);
         }
     }
     return NULL;
@@ -106,16 +114,15 @@ void *readBuffer(void *args)
 void *client(void *args)
 {
     struct sockaddr_in servAddr;
-    char username[20];
 
-    printw("Set your username: ");
+    printf("Set your username: ");
     refresh();
-    if(getstr(username))
+    if (!scanf("%s", username))
     {
         fprintf(stderr, "ERROR: failed to get message for server\n");
         return NULL;
     }
-
+    ncurses_start();
     /* Initialize wolfSSL */
     wolfSSL_Init();
 
@@ -207,8 +214,9 @@ void *client(void *args)
         fflush(stdout);
         return NULL;
     }
-    
+
     pthread_join(Twriter, NULL);
+    pthread_cancel(Treader);
     pthread_join(Treader, NULL);
 
     printf("Communication is ended!\n");
@@ -225,8 +233,6 @@ void *client(void *args)
 int main(int argc, char **argv)
 {
     pthread_t Tclient;
-    initscr();			/* Start curses mode 		*/
-    scrollok(new,TRUE);
     /* Check for proper calling convention */
     if (argc != 2)
     {
@@ -251,6 +257,6 @@ int main(int argc, char **argv)
         fprintf(stderr, "Error joining thread\n");
         return 2;
     }
-
+    ncurses_end();
     return 0; /* Return reporting a success               */
 }

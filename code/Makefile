@@ -1,7 +1,7 @@
 # TLS Examples Makefile
 CC       = gcc
 LIB_PATH = /usr/local
-CFLAGS   = -Wall -I$(LIB_PATH)/include
+CFLAGS   = -Wall -I$(LIB_PATH)/include -pthread -lncurses
 LIBS     = -L$(LIB_PATH)/lib -lm
 
 # option variables
@@ -11,6 +11,7 @@ DEBUG_FLAGS     = -g -DDEBUG
 DEBUG_INC_PATHS = -MD
 OPTIMIZE        = -Os
 
+
 # Options
 #CFLAGS+=$(DEBUG_FLAGS)
 CFLAGS+=$(OPTIMIZE)
@@ -18,26 +19,6 @@ CFLAGS+=$(OPTIMIZE)
 #LIBS+=$(QAT_LIBS)
 #LIBS+=$(STATIC_LIB)
 LIBS+=$(DYN_LIB)
-
-# build targets
-SRC=$(wildcard *.c)
-TARGETS=$(patsubst %.c, %, $(SRC))
-LINUX_SPECIFIC=client-tls-perf \
-	server-tls-epoll-perf \
-	server-tls-epoll-threaded
-
-
-# Intel QuickAssist
-QAT_PATH=../../QAT1.7
-QAT_FLAGS=-DDO_CRYPTO -DUSER_SPACE \
-    -I$(QAT_PATH)/quickassist/include \
-    -I$(QAT_PATH)/quickassist/include/lac \
-    -I$(QAT_PATH)/quickassist/utilities/osal/include \
-    -I$(QAT_PATH)/quickassist/utilities/osal/src/linux/user_space/include \
-    -I$(QAT_PATH)/quickassist/lookaside/access_layer/include \
-    -I$(QAT_PATH)/quickassist/lookaside/access_layer/src/common/include \
-    -I$(QAT_PATH)/quickassist/utilities/libusdm_drv
-QAT_LIBS=-L$(QAT_PATH) -lqat_s -lusdm_drv_s -lpthread
 
 # OS / CPU Detection
 OS_DET=UNKNOWN
@@ -74,32 +55,16 @@ else
     endif
 endif
 
-# $(info $$OS_DET is [${OS_DET}])
-# $(info $$CPU_DET is [${CPU_DET}])
-
 .PHONY: clean all
 
-ifneq ($(OS_DET),LINUX)
-all: $(filter-out $(LINUX_SPECIFIC), $(TARGETS))
-else
-all: $(TARGETS)
-endif
+all: client-tls server-tls-threaded
 
-debug: CFLAGS+=$(DEBUG_FLAGS)
-debug: all
+client-tls: client-tls.c minitalk.c
+	$(CC) -o $@ $< $(CFLAGS) $(LIBS)
 
-# add the -pthread flag to any threaded examples
-%-threaded: CFLAGS+=-pthread
-%-writedup: CFLAGS+=-pthread
-memory-tls: CFLAGS+=-pthread
-client-tls: CFLAGS+=-pthread -lncurses
-
-# compile tcp examples without the LIBS variable
-%-tcp: LIBS=
-
-# build template
-%: %.c
+server-tls-threaded: server-tls-threaded.c minitalk.c
 	$(CC) -o $@ $< $(CFLAGS) $(LIBS)
 
 clean:
-	rm -f $(TARGETS)
+	-rm -f *.o $(objects) 
+	-rm -f server-tls-threaded client-tls

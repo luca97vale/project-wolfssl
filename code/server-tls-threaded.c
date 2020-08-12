@@ -37,6 +37,9 @@
 /* threads */
 #include <pthread.h>
 
+//ncurses
+#include "minitalk.c"
+
 #define DEFAULT_PORT 11111
 
 #define MAX_CONCURRENT_THREADS 10
@@ -62,6 +65,7 @@ char buff[256];
 char buffReader[256];
 char username[256];
 struct targ_pkg *pkg;
+extern char Rbuffer[256];
 
 void *readBuffer(void *args)
 {
@@ -72,10 +76,7 @@ void *readBuffer(void *args)
         XMEMSET(buffReader, 0, sizeof(buffReader));
         /*do
         {*/
-        fflush(stdout);
         ret = wolfSSL_read(ssl, buffReader, sizeof(buffReader) - 1);
-        fflush(stdout);
-        fflush(stdout);
         /* TODO: Currently this thread can get stuck infinitely if client
          *       disconnects, add timer to abort on a timeout eventually,
          *       just an example for now so allow for possible stuck condition
@@ -85,8 +86,8 @@ void *readBuffer(void *args)
         if (ret > 0)
         {
             /* Print to stdout any data the client sends */
-            printf("%s: %s", username, buffReader);
-            fflush(stdout);
+            wprintw(ncu.tchatWin, "[%s] %s\n", username,buffReader);
+            wrefresh(ncu.tchatWin);
         }
         else
         {
@@ -112,20 +113,21 @@ void *writeBuffer(void *args)
     int ret;
     while (1)
     {
-        if (fgets(buff, sizeof(buff), stdin) == NULL)
+        read_in();
+        /*if (fgets(buff, sizeof(buff), stdin) == NULL)
         {
             fprintf(stderr, "ERROR: failed to get message for server\n");
             return NULL;
-        }
+        }*/
         /* Write our reply into buff */
         //XMEMSET(buff, 0, sizeof(buff));
-        len = XSTRLEN(buff);
+        len = XSTRLEN(Rbuffer);
         //XMEMCPY(buff, reply, len);
 
         /* Reply back to the client */
         do
         {
-            ret = wolfSSL_write(ssl, buff, len);
+            ret = wolfSSL_write(ssl, Rbuffer, len);
             /* TODO: Currently this thread can get stuck infinitely if client
          *       disconnects, add timer to abort on a timeout eventually,
          *       just an example for now so allow for possible stuck condition
@@ -135,7 +137,7 @@ void *writeBuffer(void *args)
         if (ret != len)
         {
             printf("wolfSSL_write encountered an error with code %d and msg %s\n",
-                   ret, wolfSSL_ERR_error_string(ret, buff));
+                   ret, wolfSSL_ERR_error_string(ret, Rbuffer));
         }
     }
 }
@@ -217,9 +219,11 @@ void *ClientHandler(void *args)
         fflush(stdout);
         return NULL;
     }
+    ncurses_start();
 
     pthread_join(Treader, NULL);
     pthread_join(Twriter, NULL);
+    ncurses_end();
     /* Cleanup after this connection */
     wolfSSL_free(ssl);  /* Free the wolfSSL object              */
     close(pkg->connd);  /* Close the connection to the server   */
