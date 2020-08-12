@@ -16,6 +16,16 @@ char Rbuffer[256];
 
 t_ncu ncu;
 
+void printText(char *str,char *user)
+{
+    wprintw(ncu.tchatWin, "[%s] %s\n", user,str);
+    wrefresh(ncu.tchatWin);
+}
+
+void clearWin(){
+	wclear(ncu.tchatWin);
+}
+
 
 void colors()
 {

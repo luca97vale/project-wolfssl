@@ -219,8 +219,7 @@ void *client(void *args)
     pthread_cancel(Treader);
     pthread_join(Treader, NULL);
 
-    printf("Communication is ended!\n");
-    fflush(stdout);
+    
 
     /* Cleanup and return */
     wolfSSL_free(ssl);     /* Free the wolfSSL object                  */
@@ -257,6 +256,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "Error joining thread\n");
         return 2;
     }
+    printText("Communication is ended!\n Press a button!!!","System");
+    getch();
     ncurses_end();
     return 0; /* Return reporting a success               */
 }
