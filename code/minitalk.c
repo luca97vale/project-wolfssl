@@ -141,7 +141,7 @@ void read_in()
 	int len = 0;
 	int ch;
 
-	wmove(ncu.textWin, 10, 0);
+	wmove(ncu.textWin, 0, 0);
 	wrefresh(ncu.textWin);
 	while ((ch = getch()) != '\n')
 	{

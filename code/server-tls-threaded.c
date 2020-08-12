@@ -86,7 +86,7 @@ void *readBuffer(void *args)
         if (ret > 0)
         {
             /* Print to stdout any data the client sends */
-            wprintw(ncu.tchatWin, "[%s] %s\n", username,buffReader);
+            wprintw(ncu.tchatWin, "[%s] %s\n", username, buffReader);
             wrefresh(ncu.tchatWin);
         }
         else
@@ -132,6 +132,8 @@ void *writeBuffer(void *args)
          *       disconnects, add timer to abort on a timeout eventually,
          *       just an example for now so allow for possible stuck condition
          */
+            wprintw(ncu.tchatWin, "[Server] %s\n",  Rbuffer);
+            wrefresh(ncu.tchatWin);
         } while (wolfSSL_want_write(ssl));
 
         if (ret != len)
@@ -202,6 +204,7 @@ void *ClientHandler(void *args)
     }
     /****************************    */
     XMEMSET(buff, 0, sizeof(buff));
+    ncurses_start();
     //create Thread Reader
     pthread_t Treader;
     if (pthread_create(&Treader, NULL, readBuffer, NULL))
@@ -219,7 +222,6 @@ void *ClientHandler(void *args)
         fflush(stdout);
         return NULL;
     }
-    ncurses_start();
 
     pthread_join(Treader, NULL);
     pthread_join(Twriter, NULL);
