@@ -58,6 +58,10 @@ size_t len;
 int is_end = 0;
 char username[20];
 extern char Rbuffer[256];
+//create Thread Writer
+pthread_t Twriter;
+//create Thread Reader
+pthread_t Treader;
 
 void *writeBuffer(void *args)
 {
@@ -97,6 +101,7 @@ void *readBuffer(void *args)
         if (wolfSSL_read(ssl, buffReader, sizeof(buffReader) - 1) == -1)
         {
             fprintf(stderr, "ERROR: failed to read\n");
+            pthread_cancel(Twriter);
             return NULL;
         }
         else
@@ -167,7 +172,7 @@ void *client(void *args)
     /* Connect to the server */
     if (connect(sockfd, (struct sockaddr *)&servAddr, sizeof(servAddr)) == -1)
     {
-        fprintf(stderr, "ERROR: failed to connect\n");
+        printText("ERROR: failed to connect","System");
         return NULL;
     }
 
@@ -197,8 +202,8 @@ void *client(void *args)
         return NULL;
     }
 
-    //create Thread Writer
-    pthread_t Twriter;
+    
+    
     if (pthread_create(&Twriter, NULL, writeBuffer, NULL))
     {
         fprintf(stderr, "Error creating thread\n");
@@ -206,8 +211,8 @@ void *client(void *args)
         return NULL;
     }
 
-    //create Thread Reader
-    pthread_t Treader;
+    
+    
     if (pthread_create(&Treader, NULL, readBuffer, NULL))
     {
         fprintf(stderr, "Error creating thread\n");
@@ -219,13 +224,14 @@ void *client(void *args)
     pthread_cancel(Treader);
     pthread_join(Treader, NULL);
 
-    
 
     /* Cleanup and return */
     wolfSSL_free(ssl);     /* Free the wolfSSL object                  */
     wolfSSL_CTX_free(ctx); /* Free the wolfSSL context object          */
     wolfSSL_Cleanup();     /* Cleanup the wolfSSL environment          */
     close(sockfd);         /* Close the connection to the server       */
+    printText("Communication is ended!\n Press a button!!!","System");
+    getch();
     return NULL;
 }
 
@@ -256,8 +262,6 @@ int main(int argc, char **argv)
         fprintf(stderr, "Error joining thread\n");
         return 2;
     }
-    printText("Communication is ended!\n Press a button!!!","System");
-    getch();
     ncurses_end();
     return 0; /* Return reporting a success               */
 }

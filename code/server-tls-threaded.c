@@ -42,7 +42,6 @@
 
 #define DEFAULT_PORT 11111
 
-
 #define CERT_FILE "./certs/server-cert.pem"
 #define KEY_FILE "./certs/server-key.pem"
 
@@ -71,6 +70,11 @@ struct sockaddr_in clientAddr;
 socklen_t size = sizeof(clientAddr);
 //struct targ_pkg *pkg;
 extern char Rbuffer[256];
+//create Thread Reader
+pthread_t Treader;
+//create Thread Writer
+pthread_t Twriter;
+int is_end = 0;
 
 void *readBuffer(void *args)
 {
@@ -90,6 +94,11 @@ void *readBuffer(void *args)
 
         if (ret > 0)
         {
+            if (!strcmp(buffReader, "quit"))
+            {
+                pthread_cancel(Twriter);
+                pthread_exit(NULL); /* End theread execution                */
+            }
             printText(buffReader, username);
         }
         else
@@ -97,6 +106,7 @@ void *readBuffer(void *args)
             /*printf("wolfSSL_read encountered an error with code %d and msg %s\n",
                    ret, wolfSSL_ERR_error_string(ret, buffReader));*/
             printText("ERROR READ!!", "System");
+            pthread_cancel(Twriter);
             pthread_exit(NULL); /* End theread execution                */
         }
 
@@ -114,15 +124,7 @@ void *writeBuffer(void *args)
     while (1)
     {
         read_in();
-        /*if (fgets(buff, sizeof(buff), stdin) == NULL)
-        {
-            fprintf(stderr, "ERROR: failed to get message for server\n");
-            return NULL;
-        }*/
-        /* Write our reply into buff */
-        //XMEMSET(buff, 0, sizeof(buff));
         len = XSTRLEN(Rbuffer);
-        //XMEMCPY(buff, reply, len);
 
         /* Reply back to the client */
         do
@@ -133,7 +135,14 @@ void *writeBuffer(void *args)
          *       just an example for now so allow for possible stuck condition
          */
             printText(Rbuffer, "Server");
+
         } while (wolfSSL_want_write(ssl));
+
+        if (XSTRNCMP(Rbuffer, "quit", 4) == 0)
+        {
+            is_end = 1;
+            break;
+        }
 
         if (ret != len)
         {
@@ -145,6 +154,8 @@ void *writeBuffer(void *args)
                    ret, wolfSSL_ERR_error_string(ret, Rbuffer));*/
         }
     }
+    pthread_cancel(Treader);
+    return NULL;
 }
 
 void *ClientHandler(void *args)
@@ -173,15 +184,12 @@ void *ClientHandler(void *args)
         /*printf("wolfSSL_read encountered an error with code %d and msg %s\n",
                ret, wolfSSL_ERR_error_string(ret, buff));*/
         printText("ERROR!!", "System");
-        wolfSSL_free(ssl);  /* Free the wolfSSL object              */
         close(sockfd);      /* Close the connection to the server   */
         pthread_exit(NULL); /* End theread execution                */
     }
     /****************************    */
     XMEMSET(buff, 0, sizeof(buff));
 
-    //create Thread Reader
-    pthread_t Treader;
     if (pthread_create(&Treader, NULL, readBuffer, NULL))
     {
         fprintf(stderr, "Error creating thread\n");
@@ -189,27 +197,22 @@ void *ClientHandler(void *args)
         return NULL;
     }
 
-    //create Thread Writer
-    pthread_t Twriter;
     if (pthread_create(&Twriter, NULL, writeBuffer, NULL))
     {
         fprintf(stderr, "Error creating thread\n");
         fflush(stdout);
         return NULL;
     }
+
     pthread_join(Treader, NULL);
-    pthread_cancel(Twriter);
-    //pthread_join(Twriter, NULL);
-    ncurses_end();
+    pthread_join(Twriter, NULL);
     /* Cleanup after this connection */
-    wolfSSL_free(ssl);  /* Free the wolfSSL object              */
-    close(connd);      /* Close the connection to the client   */
+    close(connd);       /* Close the connection to the client   */
     pthread_exit(NULL); /* End theread execution                */
 }
 
 int main()
 {
-    int shutdown = 0;
     int ret;
 
     /* Initialize wolfSSL */
@@ -270,7 +273,7 @@ int main()
     }
 
     /* Continue to accept clients until shutdown is issued */
-    while (!shutdown)
+    while (1)
     {
         printf("Waiting for a connection...\n");
 
@@ -302,17 +305,19 @@ int main()
 
         printf("Client connected successfully\n");
         pthread_t mainThread;
-        pthread_create(&mainThread,NULL,ClientHandler,NULL);
-        pthread_join(mainThread,NULL);
-    }
+        pthread_create(&mainThread, NULL, ClientHandler, NULL);
+        pthread_join(mainThread, NULL);
+        printText("Communication is ended!\n", "System");
 
+        if(is_end) break;
+    }
+    ncurses_end();
     printf("Shutdown complete\n");
 
     /* Cleanup after this connection */
     wolfSSL_free(ssl); /* Free the wolfSSL object              */
     close(connd);      /* Close the connection to the client   */
     /* Cleanup and return */
-
     wolfSSL_CTX_free(ctx); /* Free the wolfSSL context object          */
     wolfSSL_Cleanup();     /* Cleanup the wolfSSL environment          */
     close(sockfd);         /* Close the socket listening for clients   */
