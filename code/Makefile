@@ -1,7 +1,7 @@
 # TLS Examples Makefile
 CC       = gcc
 LIB_PATH = /usr/local
-CFLAGS   = -Wall -I$(LIB_PATH)/include -pthread -lncurses
+CFLAGS   = -Wall -I$(LIB_PATH)/include -pthread -lncurses 
 LIBS     = -L$(LIB_PATH)/lib -lm
 
 # option variables
