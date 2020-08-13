@@ -1,4 +1,4 @@
-/* client-tls.c
+/* client-tcp.c
  * Luca Valentini
  * luca.valentini@studenti.polito.it
  * Information System Security
@@ -27,15 +27,11 @@
 //ncurses
 #include "minitalk.c"
 
-#define DEFAULT_PORT 11111
+#define DEFAULT_PORT 50000
 
-#define CERT_FILE "./certs/ca-cert.pem"
 
 //Global variables
 char *ip;
-/* declare wolfSSL objects */
-WOLFSSL_CTX *ctx;
-WOLFSSL *ssl;
 int sockfd;
 char buff[256];
 char buffReader[256];
@@ -61,7 +57,7 @@ void *writeBuffer(void *args)
             is_end = 1;
         }
         /* Send the message to the server */
-        if (wolfSSL_write(ssl, Rbuffer, len) != len)
+        if (write(sockfd, Rbuffer, len) != len)
         {
             fprintf(stderr, "ERROR: failed to write\n");
             return NULL;
@@ -77,7 +73,7 @@ void *readBuffer(void *args)
     {
         /* Read the server data into our buff array */
         memset(buffReader, 0, sizeof(buffReader));
-        if (wolfSSL_read(ssl, buffReader, sizeof(buffReader) - 1) == -1)
+        if (read(sockfd, buffReader, sizeof(buffReader) - 1) == -1)
         {
             fprintf(stderr, "ERROR: failed to read\n");
             pthread_cancel(Twriter);
@@ -100,11 +96,10 @@ void *client(void *args)
     if (!scanf("%s", username))
     {
         fprintf(stderr, "ERROR: failed to get message for server\n");
+        getch();
         return NULL;
     }
     ncurses_start();
-    /* Initialize wolfSSL */
-    wolfSSL_Init();
 
     /* Create a socket that uses an internet IPv4 address,
      * Sets the socket to be stream based (TCP),
@@ -112,21 +107,6 @@ void *client(void *args)
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
         fprintf(stderr, "ERROR: failed to create the socket\n");
-        return NULL;
-    }
-
-    /* Create and initialize WOLFSSL_CTX */
-    if ((ctx = wolfSSL_CTX_new(wolfTLSv1_2_client_method())) == NULL)
-    {
-        fprintf(stderr, "ERROR: failed to create WOLFSSL_CTX\n");
-        return NULL;
-    }
-
-    /* Load client certificates into WOLFSSL_CTX */
-    if (wolfSSL_CTX_load_verify_locations(ctx, CERT_FILE, NULL) != SSL_SUCCESS)
-    {
-        fprintf(stderr, "ERROR: failed to load %s, please check the file.\n",
-                CERT_FILE);
         return NULL;
     }
 
@@ -153,30 +133,16 @@ void *client(void *args)
     }
     /*Do something*/
 
-    /* Create a WOLFSSL object */
-    if ((ssl = wolfSSL_new(ctx)) == NULL)
-    {
-        fprintf(stderr, "ERROR: failed to create WOLFSSL object\n");
-        return NULL;
-    }
-
-    /* Attach wolfSSL to the socket */
-    wolfSSL_set_fd(ssl, sockfd);
-    /* Connect to wolfSSL on the server side */
-    if (wolfSSL_connect(ssl) != SSL_SUCCESS)
-    {
-        fprintf(stderr, "ERROR: failed to connect to wolfSSL\n");
-        return NULL;
-    }
-
     strtok(username, "\n");
     len = strnlen(username, sizeof(username));
     /* Send the username to the server */
-    if (wolfSSL_write(ssl, username, len) != len)
+
+    if (write(sockfd, username, len) != len)
     {
         fprintf(stderr, "ERROR: failed to write\n");
         return NULL;
     }
+    getch();
 
     if (pthread_create(&Twriter, NULL, writeBuffer, NULL))
     {
@@ -196,11 +162,7 @@ void *client(void *args)
     pthread_cancel(Treader);
     pthread_join(Treader, NULL);
 
-    /* Cleanup and return */
-    wolfSSL_free(ssl);     /* Free the wolfSSL object                  */
-    wolfSSL_CTX_free(ctx); /* Free the wolfSSL context object          */
-    wolfSSL_Cleanup();     /* Cleanup the wolfSSL environment          */
-    close(sockfd);         /* Close the connection to the server       */
+    close(sockfd); /* Close the connection to the server       */
     printText("Communication is ended!\n Press a button!!!", "System");
     getch();
     return NULL;
