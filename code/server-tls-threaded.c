@@ -1,23 +1,8 @@
 /* server-tls-threaded.c
- *
- * Copyright (C) 2006-2020 wolfSSL Inc.
- *
- * This file is part of wolfSSL. (formerly known as CyaSSL)
- *
- * wolfSSL is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * wolfSSL is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
- */
+ * Luca Valentini
+ * luca.valentini@studenti.polito.it
+ * Information System Security
+*/
 
 /* the usual suspects */
 #include <stdlib.h>
@@ -44,17 +29,6 @@
 
 #define CERT_FILE "./certs/server-cert.pem"
 #define KEY_FILE "./certs/server-key.pem"
-
-/* Thread argument package */
-/*struct targ_pkg
-{
-    int open;
-    pthread_t tid;
-    int num;
-    int connd;
-    WOLFSSL_CTX *ctx;
-    int *shutdown;
-};*/
 
 //Global Variables
 WOLFSSL_CTX *ctx;
@@ -83,14 +57,7 @@ void *readBuffer(void *args)
     {
         /* Read the client data into our buff array */
         XMEMSET(buffReader, 0, sizeof(buffReader));
-        /*do
-        {*/
         ret = wolfSSL_read(ssl, buffReader, sizeof(buffReader) - 1);
-        /* TODO: Currently this thread can get stuck infinitely if client
-         *       disconnects, add timer to abort on a timeout eventually,
-         *       just an example for now so allow for possible stuck condition
-         */
-        //} while (wolfSSL_want_read(ssl));
 
         if (ret > 0)
         {
@@ -103,17 +70,9 @@ void *readBuffer(void *args)
         }
         else
         {
-            /*printf("wolfSSL_read encountered an error with code %d and msg %s\n",
-                   ret, wolfSSL_ERR_error_string(ret, buffReader));*/
             printText("ERROR READ!!", "System");
             pthread_cancel(Twriter);
             pthread_exit(NULL); /* End theread execution                */
-        }
-
-        /* Check for server shutdown command */
-        if (XSTRNCMP(buffReader, "shutdown", 8) == 0)
-        {
-            printf("Shutdown command issued!\n");
         }
     }
 }
@@ -146,12 +105,8 @@ void *writeBuffer(void *args)
 
         if (ret != len)
         {
-            /*char *err="";
-            err = sprintf("wolfSSL_write encountered an error with code %d and msg %s\n",
-                   ret, wolfSSL_ERR_error_string(ret, Rbuffer));*/
             printText("ERROR!!", "System");
-            /*printf("wolfSSL_write encountered an error with code %d and msg %s\n",
-                   ret, wolfSSL_ERR_error_string(ret, Rbuffer));*/
+            break;
         }
     }
     pthread_cancel(Treader);
@@ -161,8 +116,6 @@ void *writeBuffer(void *args)
 void *ClientHandler(void *args)
 {
     int ret;
-    //printf("Client %d connected successfully\n", pkg->num);
-
     /*********************** USERNAME */
     /* Read the client username into our buff array */
     XMEMSET(buff, 0, sizeof(buff));
@@ -181,8 +134,6 @@ void *ClientHandler(void *args)
     }
     else
     {
-        /*printf("wolfSSL_read encountered an error with code %d and msg %s\n",
-               ret, wolfSSL_ERR_error_string(ret, buff));*/
         printText("ERROR!!", "System");
         close(sockfd);      /* Close the connection to the server   */
         pthread_exit(NULL); /* End theread execution                */
@@ -309,7 +260,8 @@ int main()
         pthread_join(mainThread, NULL);
         printText("Communication is ended!\n", "System");
 
-        if(is_end) break;
+        if (is_end)
+            break;
     }
     ncurses_end();
     printf("Shutdown complete\n");
