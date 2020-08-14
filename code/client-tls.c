@@ -168,7 +168,6 @@ void *client(void *args)
         fprintf(stderr, "ERROR: failed to connect to wolfSSL\n");
         return NULL;
     }
-    
 
     strtok(username, "\n");
     len = strnlen(username, sizeof(username));

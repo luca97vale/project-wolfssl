@@ -109,7 +109,7 @@ At this point in time, the SSL handshake is complete and the client and server m
 
 \chapter{Wolf SSL}
 The wolfSSL embedded SSL library is a lightweight SSL/TLS library written in ANSI C and targeted for embedded, RTOS, and resource-constrained
-environments - primarily because of its small size, speed, and feature set.
+environments - primarily because of its small size, speed, and feature set; It's a SSL/TLS library optimized to run on embedded platforms.
 \\It's free and it has an excellent cross platform support.
 \\WolfSSL supports standards up to the current TLS 1.3 and DTLS 1.2 levels, is up to
 20 times smaller than OpenSSL and it's powered by the colfCrypt library.
@@ -222,6 +222,25 @@ Come si puo' vedere, lo scambio di messaggi e' cifrato.
     \caption{All SSL packets sent}
     \label{fig:galaxy}
 \end{figure}
+
+\chapter{Differences between WolfSSL and OpenSSL}
+\section{Introduction}
+
+The main differences are:
+\begin{itemize}
+\item Memory Usage
+\begin{itemize}
+\item WolfSSL can be up to 20 times smaller than OpenSSL; The build size is between 20 and 100 KB and the runtime memory usage between 1 and 36 KB. This gives a magior advantage of integrating in smaller embedded devices. 
+\end{itemize}
+\item Hardware Crypto
+\begin{itemize}
+\item WolfSSL has a partnership with the most MCU manufacturers which allows to be quite early in the market to support hardware acceleration on huge list of platforms.
+\end{itemize}
+\item Portability
+\begin{itemize}
+\item WolfSSL is more portable than OpenSSL because is made for real-time, mobile, embedded and enterprise systems.
+\end{itemize}
+\end{itemize}
 
 
 \end{document}

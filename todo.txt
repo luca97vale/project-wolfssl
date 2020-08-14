@@ -1,1 +1,3 @@
-mostrare la differenza in secondi fra tls1.2 e tls1.3 nelle varie funzioni
+-creare un semplice programma che usi openSSL e uno che usi wolfSSL per mostrare la dimensione dell'eseguibile e la velocita' di collegamento della connessione
+-mostrare la differenza in secondi fra tls1.2 e tls1.3 nelle varie funzioni
+
