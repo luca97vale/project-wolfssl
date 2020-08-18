@@ -250,10 +250,11 @@ Come si puo' vedere, lo scambio di messaggi e' cifrato.
 \chapter{Create a program using Wolf SSL}
 \section{TCP application}
 To create a SSL program you can modify your TCP program added several SSL functions.
+\subsection{TCP Server}
 
 In my example, the TCP server after configuring the socket and connecting it with the client, it creates a ClientHandler thread that launches a thread for read and a thread for write from socket.
 This application creates a chat between a client and a server.
-\begin{lstlisting}[caption={int main()},captionpos=b][language=c]
+\begin{lstlisting}[caption={int main() of TCP server},captionpos=b][language=c]
 
 int main()
 {
@@ -321,7 +322,7 @@ int main()
 
 As stated above, the clientHandler thread creates two thread, but before it waits the client username.
 
-\begin{lstlisting}[caption={clientHandler thread},captionpos=b][language=c]
+\begin{lstlisting}[caption={clientHandler thread of TCP server},captionpos=b][language=c]
 void *ClientHandler(void *args)
 {
     int ret;
@@ -374,7 +375,7 @@ void *ClientHandler(void *args)
 
 
 ReadBuffer is a thread that allows to read messages sent from client. It has an infinite loop that read data from socket open previously; Once it gets the message, with the printText function, the message is printed to the terminal using ncurses. 
-\begin{lstlisting}[caption={readBuffer thread},captionpos=b][language=c]
+\begin{lstlisting}[caption={readBuffer thread of TCP server},captionpos=b][language=c]
 void *readBuffer(void *args)
 {
     int ret;
@@ -404,7 +405,7 @@ void *readBuffer(void *args)
 
 \end{lstlisting}
 WriteBuffer thread has an infinite loop used for write messages from server to client.
-\begin{lstlisting}[caption={writeBuffer thread},captionpos=b][language=c]
+\begin{lstlisting}[caption={writeBuffer thread of TCP server},captionpos=b][language=c]
 void *writeBuffer(void *args)
 {
     int ret;
@@ -436,9 +437,46 @@ void *writeBuffer(void *args)
 \end{lstlisting}
 
 \section{From TCP to SSL}
+To create a wolfSSL application the first thing that I did is include the wolfSSL API header in your program.
+\begin{lstlisting}[language=c]
+#include <wolfssl/ssl.h>
+\end{lstlisting}
+After the inclusion of the header files, I initialize the library and the WOLFSSL\_CTX calling \textbf{wolfSSL\_Init}; This is necessary to use the library.
+\\\\ The WOLFSSL\_CTX structure contains global values for each SSL connection, including certificate information.
+To create a new WOLFSSL\_CTX there is \textbf{wolfSSL\_CTX\_new()} function. it requires an argument which defines the SSL or TLS protocol for the client or server to use. In my case I used TLS 1.3, so the call is: 
+\begin{lstlisting}[language=c]
+wolfSSL_CTX_new(wolfTLSv1_3_server_method());
+\end{lstlisting}
+for the server;
+\begin{lstlisting}[language=c]
+wolfSSL_CTX_new(wolfTLSv1_3_client_method())
+\end{lstlisting}
+for the client.
+\\\\In the WOLFSSL\_CTX must be loaded the CA (Certificate Authority) so that the client is able to verify the server's identity when they start the connection. To load the CA into the WOLFSSL\_CTX there is \\\textbf{wolfSSL\_CTX\_load\_verify\_locations()}. This function requires three arguments:
+\begin{itemize}
+\item a WOLFSSL\_CTX pointer
+\item a certificate file
+\item a path value that point to a directory which should contain CA certificates in PEM format.
+\end{itemize}
+this function returns SSL\_SUCCESS or SSL\_FAILURE.
+\\\textbf{wolfSSL\_CTX\_load\_verify\_locations()} can be used for verify the client or the server identity, but in my case, only the client loads the CA, the server uses a self-signed certificate calling:
+\begin{lstlisting}[language=c]
+wolfSSL_CTX_use_certificate_file(ctx, CERT_FILE, SSL_FILETYPE_PEM);
+\end{lstlisting}
+Also the server private key can be loaded using the wolfSSL library; the function is:
+\begin{lstlisting}[language=c]
+wolfSSL_CTX_use_PrivateKey_file(ctx, KEY_FILE, SSL_FILETYPE_PEM)
+\end{lstlisting}
 
-
-
+After a TCP connection the WOLFSSL object needs to be created and the file descriptor needs to be associated with the session; the instructions are:
+\begin{lstlisting}[language=c]
+//Connect to socket file descriptor
+WOLFSSL* ssl;
+//create WOLFSSL object
+ssl = wolfSSL_new(ctx);
+wolfSSL_set_fd(ssl,sockfd);
+\end{lstlisting}
+After the previous instructions called by client and server, the server waits an SSL client to initiate the SSL handshake; it waits until a client call \textbf{wolfSSL\_connect(ssl)} and then the handshake starts.
 \chapter{Differences between WolfSSL and OpenSSL}
 \section{Introduction}
 
