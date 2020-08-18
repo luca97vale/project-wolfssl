@@ -5,6 +5,30 @@
 \usepackage{float} %required for the placement specifier H
 \usepackage{multicol}		%multicolumns
 \usepackage{tabto}
+\usepackage{listings}
+
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
 
 \makeindex[columns=3]
 
@@ -222,6 +246,198 @@ Come si puo' vedere, lo scambio di messaggi e' cifrato.
     \caption{All SSL packets sent}
     \label{fig:galaxy}
 \end{figure}
+
+\chapter{Create a program using Wolf SSL}
+\section{TCP application}
+To create a SSL program you can modify your TCP program added several SSL functions.
+
+In my example, the TCP server after configuring the socket and connecting it with the client, it creates a ClientHandler thread that launches a thread for read and a thread for write from socket.
+This application creates a chat between a client and a server.
+\begin{lstlisting}[caption={int main()},captionpos=b][language=c]
+
+int main()
+{
+    /* Create a socket that uses an internet IPv4 address,
+     * Sets the socket to be stream based (TCP),
+     * 0 means choose the default protocol. */
+    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    {
+        fprintf(stderr, "ERROR: failed to create the socket\n");
+        return -1;
+    }
+
+    /* Initialize the server address struct with zeros */
+    memset(&servAddr, 0, sizeof(servAddr));
+
+    /* Fill in the server address */
+    servAddr.sin_family = AF_INET;           /* using IPv4      */
+    servAddr.sin_port = htons(DEFAULT_PORT); /* on DEFAULT_PORT */
+    servAddr.sin_addr.s_addr = INADDR_ANY;   /* from anywhere   */
+
+    /* Bind the server socket to our port */
+    if (bind(sockfd, (struct sockaddr *)&servAddr, sizeof(servAddr)) == -1)
+    {
+        fprintf(stderr, "ERROR: failed to bind\n");
+        return -1;
+    }
+
+    /* Listen for a new connection, allow 5 pending connections */
+    if (listen(sockfd, 5) == -1)
+    {
+        fprintf(stderr, "ERROR: failed to listen\n");
+        return -1;
+    }
+
+    /* Continue to accept clients until shutdown is issued */
+    while (1)
+    {
+        printf("Waiting for a connection...\n");
+
+        /* Accept client connections */
+        if ((connd = accept(sockfd, (struct sockaddr *)&clientAddr, &size)) == -1)
+        {
+            fprintf(stderr, "ERROR: failed to accept the connection\n\n");
+            ncurses_end();
+            return -1;
+        }
+        pthread_t mainThread;
+        pthread_create(&mainThread, NULL, ClientHandler, NULL);
+        pthread_join(mainThread, NULL);
+        printText("Communication is ended!\n", "System");
+
+        if (is_end)
+            break;
+    }
+    ncurses_end();
+    printf("Shutdown complete\n");
+
+    /* Cleanup after this connection */
+    close(connd);      /* Close the connection to the client   */
+    /* Cleanup and return */
+    close(sockfd);         /* Close the socket listening for clients   */
+    return 0;              /* Return reporting a success               */
+}
+\end{lstlisting}
+
+As stated above, the clientHandler thread creates two thread, but before it waits the client username.
+
+\begin{lstlisting}[caption={clientHandler thread},captionpos=b][language=c]
+void *ClientHandler(void *args)
+{
+    int ret;
+    /*********************** USERNAME */
+    /* Read the client username into our buff array */
+    XMEMSET(buff, 0, sizeof(buff));
+    ret = read(connd, buff, sizeof(buff));
+    ncurses_start();
+    clearWin();
+    if (ret > 0)
+    {
+        /* Print to stdout any data the client sends */
+        strcpy(username, buff);
+        char text[256];
+        sprintf(text, "Client %s connected successfully", username);
+        printText(text, "System");
+        printText("***************************\n", "System");
+        fflush(stdout);
+    }
+    else
+    {
+        printText("ERROR!!", "System");
+        close(sockfd);      /* Close the connection to the server   */
+        pthread_exit(NULL); /* End theread execution                */
+    }
+    /****************************    */
+    XMEMSET(buff, 0, sizeof(buff));
+
+    if (pthread_create(&Treader, NULL, readBuffer, NULL))
+    {
+        fprintf(stderr, "Error creating thread\n");
+        fflush(stdout);
+        return NULL;
+    }
+
+    if (pthread_create(&Twriter, NULL, writeBuffer, NULL))
+    {
+        fprintf(stderr, "Error creating thread\n");
+        fflush(stdout);
+        return NULL;
+    }
+    pthread_join(Treader, NULL);
+    pthread_join(Twriter, NULL);
+    /* Cleanup after this connection */
+    close(connd);       /* Close the connection to the client   */
+    pthread_exit(NULL); /* End theread execution                */
+}
+
+\end{lstlisting}
+
+
+ReadBuffer is a thread that allows to read messages sent from client. It has an infinite loop that read data from socket open previously; Once it gets the message, with the printText function, the message is printed to the terminal using ncurses. 
+\begin{lstlisting}[caption={readBuffer thread},captionpos=b][language=c]
+void *readBuffer(void *args)
+{
+    int ret;
+    while (1)
+    {
+        /* Read the client data into our buff array */
+        XMEMSET(buffReader, 0, sizeof(buffReader));
+        ret = read(connd, buffReader, sizeof(buffReader));
+
+        if (ret > 0)
+        {
+            if (!strcmp(buffReader, "quit"))
+            {
+                pthread_cancel(Twriter);
+                pthread_exit(NULL); /* End threaded execution                */
+            }
+            printText(buffReader, username);
+        }
+        else
+        {
+            printText("ERROR READ!!", "System");
+            pthread_cancel(Twriter);
+            pthread_exit(NULL); /* End threaded execution                */
+        }
+    }
+}
+
+\end{lstlisting}
+WriteBuffer thread has an infinite loop used for write messages from server to client.
+\begin{lstlisting}[caption={writeBuffer thread},captionpos=b][language=c]
+void *writeBuffer(void *args)
+{
+    int ret;
+    while (1)
+    {
+        read_in();
+        len = XSTRLEN(Rbuffer);
+
+        /* Reply back to the client */
+        ret = write(connd, Rbuffer, len);
+        printText(Rbuffer, "Server");
+
+        if (XSTRNCMP(Rbuffer, "quit", 4) == 0)
+        {
+            is_end = 1;
+            break;
+        }
+
+        if (ret != len)
+        {
+            printText("ERROR!!", "System");
+            break;
+        }
+    }
+    pthread_cancel(Treader);
+    return NULL;
+}
+
+\end{lstlisting}
+
+\section{From TCP to SSL}
+
+
 
 \chapter{Differences between WolfSSL and OpenSSL}
 \section{Introduction}

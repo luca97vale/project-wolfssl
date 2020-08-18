@@ -161,8 +161,6 @@ int main()
         return -1;
     }
 
-    
-
     /* Initialize the server address struct with zeros */
     memset(&servAddr, 0, sizeof(servAddr));
 
@@ -197,9 +195,6 @@ int main()
             ncurses_end();
             return -1;
         }
-
-        
-        printf("Client connected successfully\n");
         pthread_t mainThread;
         pthread_create(&mainThread, NULL, ClientHandler, NULL);
         pthread_join(mainThread, NULL);
