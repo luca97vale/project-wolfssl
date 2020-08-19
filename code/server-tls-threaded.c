@@ -178,7 +178,7 @@ int main()
         return -1;
     }
     /* Create and initialize WOLFSSL_CTX */
-    
+
     if ((ctx = wolfSSL_CTX_new(wolfTLSv1_3_server_method())) == NULL)
     {
         fprintf(stderr, "ERROR: failed to create WOLFSSL_CTX\n");
@@ -216,18 +216,16 @@ int main()
         return -1;
     }
 
-    /* Listen for a new connection, allow 5 pending connections */
-    if (listen(sockfd, 5) == -1)
+    /* Listen for a new connection */
+    if (listen(sockfd, 1) == -1)
     {
         fprintf(stderr, "ERROR: failed to listen\n");
         return -1;
     }
-
     /* Continue to accept clients until shutdown is issued */
     while (1)
     {
         printf("Waiting for a connection...\n");
-
         /* Accept client connections */
         if ((connd = accept(sockfd, (struct sockaddr *)&clientAddr, &size)) == -1)
         {

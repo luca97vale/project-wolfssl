@@ -27,7 +27,6 @@
 
 #define DEFAULT_PORT 50000
 
-
 //Global Variables
 size_t len;
 char buff[256];
@@ -176,18 +175,16 @@ int main()
         return -1;
     }
 
-    /* Listen for a new connection, allow 5 pending connections */
-    if (listen(sockfd, 5) == -1)
+    /* Listen for a new connection*/
+    if (listen(sockfd, 1) == -1)
     {
         fprintf(stderr, "ERROR: failed to listen\n");
         return -1;
     }
-
     /* Continue to accept clients until shutdown is issued */
     while (1)
     {
         printf("Waiting for a connection...\n");
-
         /* Accept client connections */
         if ((connd = accept(sockfd, (struct sockaddr *)&clientAddr, &size)) == -1)
         {
@@ -207,8 +204,8 @@ int main()
     printf("Shutdown complete\n");
 
     /* Cleanup after this connection */
-    close(connd);      /* Close the connection to the client   */
+    close(connd); /* Close the connection to the client   */
     /* Cleanup and return */
-    close(sockfd);         /* Close the socket listening for clients   */
-    return 0;              /* Return reporting a success               */
+    close(sockfd); /* Close the socket listening for clients   */
+    return 0;      /* Return reporting a success               */
 }

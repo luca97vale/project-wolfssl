@@ -131,7 +131,7 @@ The SSL handshake protocol comprises four sets of messages:
 
 At this point in time, the SSL handshake is complete and the client and server may start exchanging application-layer data.
 
-\chapter{Wolf SSL}
+\chapter{WolfSSL}
 The wolfSSL embedded SSL library is a lightweight SSL/TLS library written in ANSI C and targeted for embedded, RTOS, and resource-constrained
 environments - primarily because of its small size, speed, and feature set; It's an SSL/TLS library optimized to run on embedded platforms.
 \\It's free and it has an excellent cross platform support.
@@ -247,7 +247,7 @@ Come si puo' vedere, lo scambio di messaggi e' cifrato.
     \label{fig:galaxy}
 \end{figure}
 
-\chapter{Create a program using Wolf SSL}
+\chapter{Create a program using WolfSSL}
 \section{TCP application}
 To create an SSL program you can modify your TCP program added several SSL functions. To explain the migration from TCP to SSL, I created a simple chat between a client and a server.
 \subsection{TCP Server}
@@ -281,18 +281,16 @@ int main()
         return -1;
     }
 
-    /* Listen for a new connection, allow 5 pending connections */
-    if (listen(sockfd, 5) == -1)
+    /* Listen for a new connection*/
+    if (listen(sockfd, 1) == -1)
     {
         fprintf(stderr, "ERROR: failed to listen\n");
         return -1;
     }
-
     /* Continue to accept clients until shutdown is issued */
     while (1)
     {
         printf("Waiting for a connection...\n");
-
         /* Accept client connections */
         if ((connd = accept(sockfd, (struct sockaddr *)&clientAddr, &size)) == -1)
         {
@@ -312,11 +310,12 @@ int main()
     printf("Shutdown complete\n");
 
     /* Cleanup after this connection */
-    close(connd);      /* Close the connection to the client   */
+    close(connd); /* Close the connection to the client   */
     /* Cleanup and return */
-    close(sockfd);         /* Close the socket listening for clients   */
-    return 0;              /* Return reporting a success               */
+    close(sockfd); /* Close the socket listening for clients   */
+    return 0;      /* Return reporting a success               */
 }
+
 \end{lstlisting}
 
 As stated above, the clientHandler thread creates two thread, but before it waits the client username.
@@ -498,11 +497,13 @@ wolfSSL_Cleanup();
 \section{SSL application}
 To develop an SSL application, I started from the TCP chat explained in the previous section and I added the wolfSSL function to create an encrypted communication.
 \\The goal of this program is to show how to create a simple encrypted chat, focusing on the security of an application and not to the good practices of the socket and thread applications.
-\\Some part of the code like inclusion and global variables are omitted; you can find them on github.
+\\Some part of the code like inclusion and global variables are omitted (wolfSSL object and other variables are stored in global memory); you can find them on github.
 \\In the next subsections I'll try to explain the code of the program:
 \subsection{SSL Server}
 The server created by me authenticate itself by sending a certificate; For testing purpose, all the certificates that I use, I took from wolfSSL download.
-\begin{lstlisting}[caption={int main() of SSL server},captionpos=b][language=c]
+\\It also use an RSA key for secure symmetric key exchange that is used for actual transmitted data encryption and decryption.
+\\After the initialization of the wolfSSL and the socket, the main function marks the socket referred to by sockfd as a passive socket, that is, as a socket that will be used to accept incoming connection requests using accept.
+\begin{lstlisting}[caption={int main() of SSL server, 1* part},captionpos=b][language=c]
 int main()
 {
     int ret;
@@ -557,18 +558,22 @@ int main()
         return -1;
     }
 
-    /* Listen for a new connection, allow 5 pending connections */
-    if (listen(sockfd, 5) == -1)
+    /* Listen for a new connection*/
+    if (listen(sockfd, 1) == -1)
     {
         fprintf(stderr, "ERROR: failed to listen\n");
         return -1;
     }
-
+   .
+   .
+   .
+\end{lstlisting}
+This server can communicate with one client at a time so there is an infinite loop where the encrypted connection with a client is established. At this point a mainThread is created to handle reading and writing through the secure channel. Whenever the connection falls, the thread ends and the server try to established a new connection. The server ends only when keyboard of the server type 'quit' (this part is in another function).
+\begin{lstlisting}[caption={int main() of SSL server, 2* part},captionpos=b][language=c]
     /* Continue to accept clients until shutdown is issued */
     while (1)
     {
-        printf("Waiting for a connection...\n");
-
+	    printf("Waiting for a connection...\n");
         /* Accept client connections */
         if ((connd = accept(sockfd, (struct sockaddr *)&clientAddr, &size)) == -1)
         {
@@ -617,6 +622,128 @@ int main()
     return 0;              /* Return reporting a success               */
 }
 \end{lstlisting}
+
+The previously created thread executes ClientHandler function; even if the connection is established, it shows 'Client name connected successfully' message on the screen only after reading the username from the secure channel.
+\\After that two thread are created, one for read messages and one for write messages.
+\begin{lstlisting}[caption={ClientHandler() of SSL server},captionpos=b][language=c]
+void *ClientHandler(void *args)
+{
+    int ret;
+    /*********************** USERNAME */
+    /* Read the client username into our buff array */
+    XMEMSET(buff, 0, sizeof(buff));
+    ret = wolfSSL_read(ssl, buff, sizeof(buff) - 1);
+    ncurses_start();
+    clearWin();
+    if (ret > 0)
+    {
+        /* Print to stdout any data the client sends */
+        strcpy(username, buff);
+        char text[256];
+        sprintf(text, "Client %s connected successfully", username);
+        printText(text, "System");
+        printText("***************************\n", "System");
+        fflush(stdout);
+    }
+    else
+    {
+        printText("ERROR!!", "System");
+        close(sockfd);      /* Close the connection to the server   */
+        pthread_exit(NULL); /* End theread execution                */
+    }
+    /****************************    */
+    XMEMSET(buff, 0, sizeof(buff));
+
+    if (pthread_create(&Treader, NULL, readBuffer, NULL))
+    {
+        fprintf(stderr, "Error creating thread\n");
+        fflush(stdout);
+        return NULL;
+    }
+
+    if (pthread_create(&Twriter, NULL, writeBuffer, NULL))
+    {
+        fprintf(stderr, "Error creating thread\n");
+        fflush(stdout);
+        return NULL;
+    }
+
+    pthread_join(Treader, NULL);
+    pthread_join(Twriter, NULL);
+    /* Cleanup after this connection */
+    close(connd);       /* Close the connection to the client   */
+    pthread_exit(NULL); /* End theread execution                */
+}
+
+\end{lstlisting}
+WriteBuffer is a function executes by a thread for writing in the channel. \textbf{read\_in()} read the characters typed from the user until a new line and then sent the message with \textbf{wolfSSL\_write(ssl,Rbuffer,len)}.
+\begin{lstlisting}[caption={writeBuffer() of SSL server},captionpos=b][language=c]
+void *writeBuffer(void *args)
+{
+    int ret;
+    while (1)
+    {
+        read_in();
+        len = XSTRLEN(Rbuffer);
+
+        /* Reply back to the client */
+        do
+        {
+            ret = wolfSSL_write(ssl, Rbuffer, len);
+            /* TODO: Currently this thread can get stuck infinitely if client
+         *       disconnects, add timer to abort on a timeout eventually,
+         *       just an example for now so allow for possible stuck condition
+         */
+            printText(Rbuffer, "Server");
+
+        } while (wolfSSL_want_write(ssl));
+
+        if (XSTRNCMP(Rbuffer, "quit", 4) == 0)
+        {
+            is_end = 1;
+            break;
+        }
+
+        if (ret != len)
+        {
+            printText("ERROR!!", "System");
+            break;
+        }
+    }
+    pthread_cancel(Treader);
+    return NULL;
+}
+\end{lstlisting}
+ReadBuffer function read messages from the channel through \textbf{wolfSSL\_read(ssl, buffReader, sizeof(buffReader)-1)}. If the user on the other side writes 'quit', this function and writeBuffer function end.
+\begin{lstlisting}[caption={readBuffer() of SSL server},captionpos=b][language=c]
+void *readBuffer(void *args)
+{
+    int ret;
+    while (1)
+    {
+        /* Read the client data into our buff array */
+        XMEMSET(buffReader, 0, sizeof(buffReader));
+        ret = wolfSSL_read(ssl, buffReader, sizeof(buffReader) - 1);
+
+        if (ret > 0)
+        {
+            if (!strcmp(buffReader, "quit"))
+            {
+                pthread_cancel(Twriter);
+                pthread_exit(NULL); /* End theread execution                */
+            }
+            printText(buffReader, username);
+        }
+        else
+        {
+            printText("ERROR READ!!", "System");
+            pthread_cancel(Twriter);
+            pthread_exit(NULL); /* End theread execution                */
+        }
+    }
+}
+\end{lstlisting}
+************ServerKeyExchange has been removed in TLS 1.3*********
 
 \chapter{Differences between WolfSSL and OpenSSL}
 \section{Introduction}
