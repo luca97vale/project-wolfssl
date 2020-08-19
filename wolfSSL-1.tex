@@ -133,7 +133,7 @@ At this point in time, the SSL handshake is complete and the client and server m
 
 \chapter{Wolf SSL}
 The wolfSSL embedded SSL library is a lightweight SSL/TLS library written in ANSI C and targeted for embedded, RTOS, and resource-constrained
-environments - primarily because of its small size, speed, and feature set; It's a SSL/TLS library optimized to run on embedded platforms.
+environments - primarily because of its small size, speed, and feature set; It's an SSL/TLS library optimized to run on embedded platforms.
 \\It's free and it has an excellent cross platform support.
 \\WolfSSL supports standards up to the current TLS 1.3 and DTLS 1.2 levels, is up to
 20 times smaller than OpenSSL and it's powered by the colfCrypt library.
@@ -249,11 +249,10 @@ Come si puo' vedere, lo scambio di messaggi e' cifrato.
 
 \chapter{Create a program using Wolf SSL}
 \section{TCP application}
-To create a SSL program you can modify your TCP program added several SSL functions.
+To create an SSL program you can modify your TCP program added several SSL functions. To explain the migration from TCP to SSL, I created a simple chat between a client and a server.
 \subsection{TCP Server}
 
 In my example, the TCP server after configuring the socket and connecting it with the client, it creates a ClientHandler thread that launches a thread for read and a thread for write from socket.
-This application creates a chat between a client and a server.
 \begin{lstlisting}[caption={int main() of TCP server},captionpos=b][language=c]
 
 int main()
@@ -435,6 +434,7 @@ void *writeBuffer(void *args)
 }
 
 \end{lstlisting}
+\pagebreak
 
 \section{From TCP to SSL}
 To create a wolfSSL application the first thing that I did is include the wolfSSL API header in your program.
@@ -445,11 +445,11 @@ After the inclusion of the header files, I initialize the library and the WOLFSS
 \\\\ The WOLFSSL\_CTX structure contains global values for each SSL connection, including certificate information.
 To create a new WOLFSSL\_CTX there is \textbf{wolfSSL\_CTX\_new()} function. it requires an argument which defines the SSL or TLS protocol for the client or server to use. In my case I used TLS 1.3, so the call is: 
 \begin{lstlisting}[language=c]
-wolfSSL_CTX_new(wolfTLSv1_3_server_method());
+WOLFSSL_CTX *ctx = wolfSSL_CTX_new(wolfTLSv1_3_server_method());
 \end{lstlisting}
 for the server;
 \begin{lstlisting}[language=c]
-wolfSSL_CTX_new(wolfTLSv1_3_client_method())
+WOLFSSL_CTX *ctx = wolfSSL_CTX_new(wolfTLSv1_3_client_method())
 \end{lstlisting}
 for the client.
 \\\\In the WOLFSSL\_CTX must be loaded the CA (Certificate Authority) so that the client is able to verify the server's identity when they start the connection. To load the CA into the WOLFSSL\_CTX there is \\\textbf{wolfSSL\_CTX\_load\_verify\_locations()}. This function requires three arguments:
@@ -461,11 +461,11 @@ for the client.
 this function returns SSL\_SUCCESS or SSL\_FAILURE.
 \\\textbf{wolfSSL\_CTX\_load\_verify\_locations()} can be used for verify the client or the server identity, but in my case, only the client loads the CA, the server uses a self-signed certificate calling:
 \begin{lstlisting}[language=c]
-wolfSSL_CTX_use_certificate_file(ctx, CERT_FILE, SSL_FILETYPE_PEM);
+int wolfSSL_CTX_use_certificate_file(ctx, CERT_FILE, SSL_FILETYPE_PEM);
 \end{lstlisting}
 Also the server private key can be loaded using the wolfSSL library; the function is:
 \begin{lstlisting}[language=c]
-wolfSSL_CTX_use_PrivateKey_file(ctx, KEY_FILE, SSL_FILETYPE_PEM)
+int wolfSSL_CTX_use_PrivateKey_file(ctx, KEY_FILE, SSL_FILETYPE_PEM)
 \end{lstlisting}
 
 After a TCP connection the WOLFSSL object needs to be created and the file descriptor needs to be associated with the session; the instructions are:
@@ -477,6 +477,147 @@ ssl = wolfSSL_new(ctx);
 wolfSSL_set_fd(ssl,sockfd);
 \end{lstlisting}
 After the previous instructions called by client and server, the server waits an SSL client to initiate the SSL handshake; it waits until a client call \textbf{wolfSSL\_connect(ssl)} and then the handshake starts.
+\\\\Once the connection functions are set, I replaced \textbf{read(...)} function with: 
+\begin{lstlisting}[language=c]
+int wolfSSL_read(WOLFSSL *ssl, void *data, int sz);
+\end{lstlisting}
+It read \textbf{sz} bytes from the SSL session \textbf{ssl} internal read buffer into the buffer \textbf{data}. The bytes are removed from the internal receive buffer;
+\\\\Instead the \textbf{write(...)} function is replaced by:
+\begin{lstlisting}[language=c]
+int wolfSSL_write(WOLFSSL *ssl, void *data, int sz);
+\end{lstlisting}
+It writes \textbf{sz} bytes from the buffer, \textbf{data}, to the SSL connection, \textbf{ssl}.
+\\\\When the application is over, the WOLFSSL\_CTX object and the wolfSSL library must be freed; the instructions are:
+\begin{lstlisting}[language=c]
+wolfSSL_free(ssl);
+wolfSSL_CTX_free(ctx);
+wolfSSL_Cleanup();
+\end{lstlisting}
+
+\pagebreak
+\section{SSL application}
+To develop an SSL application, I started from the TCP chat explained in the previous section and I added the wolfSSL function to create an encrypted communication.
+\\The goal of this program is to show how to create a simple encrypted chat, focusing on the security of an application and not to the good practices of the socket and thread applications.
+\\Some part of the code like inclusion and global variables are omitted; you can find them on github.
+\\In the next subsections I'll try to explain the code of the program:
+\subsection{SSL Server}
+The server created by me authenticate itself by sending a certificate; For testing purpose, all the certificates that I use, I took from wolfSSL download.
+\begin{lstlisting}[caption={int main() of SSL server},captionpos=b][language=c]
+int main()
+{
+    int ret;
+
+    /* Initialize wolfSSL */
+    wolfSSL_Init();
+
+    /* Create a socket that uses an internet IPv4 address,
+     * Sets the socket to be stream based (TCP),
+     * 0 means choose the default protocol. */
+    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    {
+        fprintf(stderr, "ERROR: failed to create the socket\n");
+        return -1;
+    }
+    /* Create and initialize WOLFSSL_CTX */
+    
+    if ((ctx = wolfSSL_CTX_new(wolfTLSv1_3_server_method())) == NULL)
+    {
+        fprintf(stderr, "ERROR: failed to create WOLFSSL_CTX\n");
+        return -1;
+    }
+
+    /* Load server certificates into WOLFSSL_CTX */
+    if (wolfSSL_CTX_use_certificate_file(ctx, CERT_FILE, SSL_FILETYPE_PEM) != SSL_SUCCESS)
+    {
+        fprintf(stderr, "ERROR: failed to load %s, please check the file.\n",
+                CERT_FILE);
+        return -1;
+    }
+
+    /* Load server key into WOLFSSL_CTX */
+    if (wolfSSL_CTX_use_PrivateKey_file(ctx, KEY_FILE, SSL_FILETYPE_PEM) != SSL_SUCCESS)
+    {
+        fprintf(stderr, "ERROR: failed to load %s, please check the file.\n",
+                KEY_FILE);
+        return -1;
+    }
+
+    /* Initialize the server address struct with zeros */
+    memset(&servAddr, 0, sizeof(servAddr));
+
+    /* Fill in the server address */
+    servAddr.sin_family = AF_INET;           /* using IPv4      */
+    servAddr.sin_port = htons(DEFAULT_PORT); /* on DEFAULT_PORT */
+    servAddr.sin_addr.s_addr = INADDR_ANY;   /* from anywhere   */
+
+    /* Bind the server socket to our port */
+    if (bind(sockfd, (struct sockaddr *)&servAddr, sizeof(servAddr)) == -1)
+    {
+        fprintf(stderr, "ERROR: failed to bind\n");
+        return -1;
+    }
+
+    /* Listen for a new connection, allow 5 pending connections */
+    if (listen(sockfd, 5) == -1)
+    {
+        fprintf(stderr, "ERROR: failed to listen\n");
+        return -1;
+    }
+
+    /* Continue to accept clients until shutdown is issued */
+    while (1)
+    {
+        printf("Waiting for a connection...\n");
+
+        /* Accept client connections */
+        if ((connd = accept(sockfd, (struct sockaddr *)&clientAddr, &size)) == -1)
+        {
+            fprintf(stderr, "ERROR: failed to accept the connection\n\n");
+            return -1;
+        }
+
+        /* Create a WOLFSSL object */
+        if ((ssl = wolfSSL_new(ctx)) == NULL)
+        {
+            fprintf(stderr, "ERROR: failed to create WOLFSSL object\n");
+            return -1;
+        }
+
+        /* Attach wolfSSL to the socket */
+        wolfSSL_set_fd(ssl, connd);
+
+        /* Establish TLS connection */
+        ret = wolfSSL_accept(ssl);
+        if (ret != SSL_SUCCESS)
+        {
+            fprintf(stderr, "wolfSSL_accept error = %d\n",
+                    wolfSSL_get_error(ssl, ret));
+            return -1;
+        }
+
+        printf("Client connected successfully\n");
+        pthread_t mainThread;
+        pthread_create(&mainThread, NULL, ClientHandler, NULL);
+        pthread_join(mainThread, NULL);
+        printText("Communication is ended!\n", "System");
+
+        if (is_end)
+            break;
+    }
+    ncurses_end();
+    printf("Shutdown complete\n");
+
+    /* Cleanup after this connection */
+    wolfSSL_free(ssl); /* Free the wolfSSL object              */
+    close(connd);      /* Close the connection to the client   */
+    /* Cleanup and return */
+    wolfSSL_CTX_free(ctx); /* Free the wolfSSL context object          */
+    wolfSSL_Cleanup();     /* Cleanup the wolfSSL environment          */
+    close(sockfd);         /* Close the socket listening for clients   */
+    return 0;              /* Return reporting a success               */
+}
+\end{lstlisting}
+
 \chapter{Differences between WolfSSL and OpenSSL}
 \section{Introduction}
 
