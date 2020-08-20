@@ -116,7 +116,7 @@ void *client(void *args)
     }
 
     /* Create and initialize WOLFSSL_CTX */
-    if ((ctx = wolfSSL_CTX_new(wolfTLSv1_3_client_method())) == NULL)
+    if ((ctx = wolfSSL_CTX_new(wolfTLSv1_2_client_method())) == NULL)
     {
         fprintf(stderr, "ERROR: failed to create WOLFSSL_CTX\n");
         return NULL;
