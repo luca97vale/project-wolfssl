@@ -185,6 +185,7 @@ int main()
         return -1;
     }
 
+
     /* Load server certificates into WOLFSSL_CTX */
     if (wolfSSL_CTX_use_certificate_file(ctx, CERT_FILE, SSL_FILETYPE_PEM) != SSL_SUCCESS)
     {

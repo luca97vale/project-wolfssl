@@ -451,7 +451,7 @@ for the server;
 WOLFSSL_CTX *ctx = wolfSSL_CTX_new(wolfTLSv1_3_client_method())
 \end{lstlisting}
 for the client.
-\\\\In the WOLFSSL\_CTX can be loaded the CA (Certificate Authority) so that the client is able to verify the server's identity when they start the connection conversely. To load the CA into the WOLFSSL\_CTX there is \\\textbf{wolfSSL\_CTX\_load\_verify\_locations()}. This function requires three arguments:
+\\\\In the WOLFSSL\_CTX can be loaded the CA (Certificate Authority) so that the client is able to verify the server's identity when they start the connection. To load the CA into the WOLFSSL\_CTX there is \\\textbf{wolfSSL\_CTX\_load\_verify\_locations()}. This function requires three arguments:
 \begin{itemize}
 \item a WOLFSSL\_CTX pointer
 \item a certificate file
@@ -901,7 +901,7 @@ To execute a wolfSSL program you must have installed wolfSSL on your pc, and the
 \section{Execute a WolfSSL program}
 In my project I used a laptop for the client part, and a Raspberry Pi for the server part; they are connected to the same LAN.
 \\Below you can see the GUI of the client and the server part and the traffic analyze with wireshark.
-\\The IP address of server is \textbf{192.168.0.53}
+\\The IP address of server is \textbf{192.168.0.53} and the port is \textbf{11111}.
 \\The IP address of client is \textbf{192.168.0.46}\\
 
 \begin{figure}[H]
@@ -919,22 +919,71 @@ In my project I used a laptop for the client part, and a Raspberry Pi for the se
 \end{figure}
 
 After the execution of the server, a client can connect to it and the ssl handshake starts.
+\\With the hello packet below, the client provides an ordered list of 27 cipher suites that it will support for encryption. The list is in the order preferred by the client, with highest preference first. This list can be modified by the programmer.
+\\In this case, the client provides a list of optional extension which the server can use to take action or enable new features, for example:
+\begin{itemize}
+\item key\_share 
+\begin{itemize}
+\item the client sends one or more public keys using an algorithm that it thinks the server will support. This allows the rest of the handshake after the ClientHello message to be encrypted.
+\end{itemize}
+\item supported\_version
+\begin{itemize}
+\item the client indicates its support of TLS 1.3
+\end{itemize}
+\end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.248]{./code/img/client-hello.png}
+    \caption{Client Hello}
+    \label{fig:galaxy}
+\end{figure}
+
+
+In the Server Hello packet, the server has selected cipher suite 0x1301 (TLS\_AES\_128\_GCM\_SHA256) from the list of options given by the client.
+\\The server sends also a public key using the algorithm of the public key sent by the client. Once this is sent encryption keys can be calculated and the rest of the handshake will be encrypted.
+The rest of the packets are encrypted. The encrypted content will be the one shown by the chat in the next images, except some "hidden" packets, for example to send the username.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.27]{./code/img/2-client.png}
-    \caption{Execute WolfSSL client}
+    \includegraphics[scale=0.248]{./code/img/server-hello.png}
+    \caption{Server Hello}
+    \label{fig:galaxy}
+\end{figure}
+\pagebreak
+
+After the SSL handshake the situation in the server GUI is:
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.6]{./code/img/2-server.png}
+    \caption{Client connected, server GUI}
+    \label{fig:galaxy}
+\end{figure}
+
+\pagebreak
+To test the exact function of the programs, I sent several messages between the laptop and the raspberry:
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.20]{./code/img/2-client.png}
+    \caption{Exchange messages. Client side}
     \label{fig:galaxy}
 \end{figure}
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.27]{./code/img/3-client.png}
-    \caption{Execute WolfSSL client}
+    \includegraphics[scale=0.44]{./code/img/3-server.png}
+    \caption{Exchange messages. Server side}
+    \label{fig:galaxy}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.248]{./code/img/application_data.png}
+    \caption{Application data}
     \label{fig:galaxy}
 \end{figure}
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.6]{./code/img/3-server.png}
+    \includegraphics[scale=0.6]{./code/img/3-client.png}
     \caption{Execute WolfSSL client}
     \label{fig:galaxy}
 \end{figure}
