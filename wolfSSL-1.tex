@@ -451,14 +451,14 @@ for the server;
 WOLFSSL_CTX *ctx = wolfSSL_CTX_new(wolfTLSv1_3_client_method())
 \end{lstlisting}
 for the client.
-\\\\In the WOLFSSL\_CTX must be loaded the CA (Certificate Authority) so that the client is able to verify the server's identity when they start the connection. To load the CA into the WOLFSSL\_CTX there is \\\textbf{wolfSSL\_CTX\_load\_verify\_locations()}. This function requires three arguments:
+\\\\In the WOLFSSL\_CTX can be loaded the CA (Certificate Authority) so that the client is able to verify the server's identity when they start the connection conversely. To load the CA into the WOLFSSL\_CTX there is \\\textbf{wolfSSL\_CTX\_load\_verify\_locations()}. This function requires three arguments:
 \begin{itemize}
 \item a WOLFSSL\_CTX pointer
 \item a certificate file
 \item a path value that point to a directory which should contain CA certificates in PEM format.
 \end{itemize}
 this function returns SSL\_SUCCESS or SSL\_FAILURE.
-\\\textbf{wolfSSL\_CTX\_load\_verify\_locations()} can be used for verify the client or the server identity, but in my case, only the client loads the CA, the server uses a self-signed certificate calling:
+\\\textbf{wolfSSL\_CTX\_load\_verify\_locations()} can be used for verify the client or the server identity, but in my case, only the client loads the CA, the server loads a certificate file into the SSL context (WOLFSSL\_CTX) calling:
 \begin{lstlisting}[language=c]
 int wolfSSL_CTX_use_certificate_file(ctx, CERT_FILE, SSL_FILETYPE_PEM);
 \end{lstlisting}
@@ -894,7 +894,15 @@ void *client(void *args)
 
 Reading and writing threads are similar to the server part, so I'm not putting them in this part.
 
-\section{Execute an WolfSSL program}
+\section{Compile a WolfSSL program}
+To execute a wolfSSL program you must have installed wolfSSL on your pc, and then you must add \textbf{-lwolfssl} on your gcc command.
+\\Me having used the threads and ncurses I have to add other flags to gcc command; to optimize the compilation I created a makefile.
+
+\section{Execute a WolfSSL program}
+In my project I used a laptop for the client part, and a Raspberry Pi for the server part; they are connected to the same LAN.
+\\Below you can see the GUI of the client and the server part and the traffic analyze with wireshark.
+\\The IP address of server is \textbf{192.168.0.53}
+\\The IP address of client is \textbf{192.168.0.46}
 
 
 ************ServerKeyExchange has been removed in TLS 1.3*********
