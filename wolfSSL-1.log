@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (MiKTeX 2.9.7350) (preloaded format=pdflatex 2020.3.21)  2 MAY 2020 17:47
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (MiKTeX 20.6.29) (preloaded format=pdflatex 2020.3.21)  23 AUG 2020 17:46
 entering extended mode
 **/home/luca/Documents/latex/miktex/project-wolfssl/wolfSSL-1.tex
 (/home/luca/Documents/latex/miktex/project-wolfssl/wolfSSL-1.tex
@@ -155,55 +155,96 @@ Package: tabto 2018/12/28  v 1.4  Another tabbing mechanism
 \CurrentLineWidth=\dimen146
 \TabPrevPos=\dimen147
 )
-\wolfSSL-1@idxfile=\write3
-\openout3 = `wolfSSL-1.idx'.
+(/home/luca/.miktex/texmfs/install/tex/latex/listings/listings.sty
+\lst@mode=\count188
+\lst@gtempboxa=\box93
+\lst@token=\toks21
+\lst@length=\count189
+\lst@currlwidth=\dimen148
+\lst@column=\count190
+\lst@pos=\count191
+\lst@lostspace=\dimen149
+\lst@width=\dimen150
+\lst@newlines=\count192
+\lst@lineno=\count193
+\lst@maxwidth=\dimen151
+
+(/home/luca/.miktex/texmfs/install/tex/latex/listings/lstmisc.sty
+File: lstmisc.sty 2019/09/10 1.8c (Carsten Heinz)
+\c@lstnumber=\count194
+\lst@skipnumbers=\count195
+\lst@framebox=\box94
+)
+(/home/luca/.miktex/texmfs/install/tex/latex/listings/listings.cfg
+File: listings.cfg 2019/09/10 1.8c listings configuration
+))
+Package: listings 2019/09/10 1.8c (Carsten Heinz)
+
+(/home/luca/.miktex/texmfs/install/tex/latex/comment/comment.sty
+\CommentStream=\write3
+
+Excluding comment 'comment')
+(/home/luca/.miktex/texmfs/install/tex/latex/graphics/color.sty
+Package: color 2019/11/23 v1.2a Standard LaTeX Color (DPC)
+
+(/home/luca/.miktex/texmfs/install/tex/latex/graphics-cfg/color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package color Info: Driver file: pdftex.def on input line 147.
+)
+(/home/luca/.miktex/texmfs/install/tex/latex/listings/lstlang1.sty
+File: lstlang1.sty 2019/09/10 1.8c listings language file
+)
+\wolfSSL-1@idxfile=\write4
+\openout4 = `wolfSSL-1.idx'.
 
 
 Writing index file wolfSSL-1.idx
 (/home/luca/.miktex/texmfs/install/tex/latex/l3backend/l3backend-pdfmode.def
 File: l3backend-pdfmode.def 2020-03-12 L3 backend support: PDF mode
-\l__kernel_color_stack_int=\count188
-\l__pdf_internal_box=\box93
+\l__kernel_color_stack_int=\count196
+\l__pdf_internal_box=\box95
 )
 No file wolfSSL-1.aux.
 \openout1 = `wolfSSL-1.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
 (/home/luca/.miktex/texmfs/install/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count189
-\scratchdimen=\dimen148
-\scratchbox=\box94
-\nofMPsegments=\count190
-\nofMParguments=\count191
-\everyMPshowfont=\toks21
-\MPscratchCnt=\count192
-\MPscratchDim=\dimen149
-\MPnumerator=\count193
-\makeMPintoPDFobject=\count194
-\everyMPtoPDFconversion=\toks22
+\scratchcounter=\count197
+\scratchdimen=\dimen152
+\scratchbox=\box96
+\nofMPsegments=\count198
+\nofMParguments=\count199
+\everyMPshowfont=\toks22
+\MPscratchCnt=\count266
+\MPscratchDim=\dimen153
+\MPnumerator=\count267
+\makeMPintoPDFobject=\count268
+\everyMPtoPDFconversion=\toks23
 ) (/home/luca/.miktex/texmfs/install/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 85.
 )
+\c@lstlisting=\count269
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <14.4> on input line 19.
+(Font)              <14.4> on input line 44.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 19.
+(Font)              <7> on input line 44.
 
 [1
 
@@ -233,27 +274,27 @@ pdfTeX warning: pdflatex (file /home/luca/.miktex/texmfs/data/pdftex/config/pdf
 tex.map): invalid entry for `rptmrre': unknown name `.2' ignored
 }]
 No file wolfSSL-1.toc.
-\tf@toc=\write4
-\openout4 = `wolfSSL-1.toc'.
+\tf@toc=\write5
+\openout5 = `wolfSSL-1.toc'.
 
 [1
 
 ] [1]
 Chapter 1.
 
-Overfull \hbox (11.90694pt too wide) in paragraph at lines 36--37
+Overfull \hbox (11.90694pt too wide) in paragraph at lines 61--62
 []\OT1/cmr/m/n/12 Authentication (both peer entity anda data origin authenticat
 ion) services 
  []
 
 
-Overfull \hbox (8.1903pt too wide) in paragraph at lines 41--42
+Overfull \hbox (8.1903pt too wide) in paragraph at lines 66--67
 \OT1/cmr/m/n/12 layer between the transporrt and the application layer that ser
 ves two purposes: 
  []
 
 
-Overfull \hbox (3.59915pt too wide) in paragraph at lines 44--45
+Overfull \hbox (3.59915pt too wide) in paragraph at lines 69--70
 \OT1/cmr/m/n/12 called fragments; each fragment is optionally compressed, authe
 nticated,
  []
@@ -261,23 +302,23 @@ nticated,
 <subLayer_subProtocols.png, id=14, 816.04875pt x 561.09625pt>
 File: subLayer_subProtocols.png Graphic file (type png)
 <use subLayer_subProtocols.png>
-Package pdftex.def Info: subLayer_subProtocols.png  used on input line 49.
+Package pdftex.def Info: subLayer_subProtocols.png  used on input line 74.
 (pdftex.def)             Requested size: 408.02338pt x 280.54744pt.
 
-Overfull \hbox (18.02338pt too wide) in paragraph at lines 49--50
+Overfull \hbox (18.02338pt too wide) in paragraph at lines 74--75
  [][] 
  []
 
 [1
 
 ]
-Overfull \hbox (5.60844pt too wide) in paragraph at lines 61--62
+Overfull \hbox (5.60844pt too wide) in paragraph at lines 86--87
 \OT1/cmr/m/n/12 set by the SSL handshake protocol in place and make them effect
 ive. 
  []
 
 
-Overfull \hbox (8.12381pt too wide) in paragraph at lines 63--64
+Overfull \hbox (8.12381pt too wide) in paragraph at lines 88--89
 []\OT1/cmr/m/n/12 The \OT1/cmr/m/it/12 SSL application data protocol \OT1/cmr/m
 /n/12 is used for the secure transmission
  []
@@ -286,16 +327,16 @@ Overfull \hbox (8.12381pt too wide) in paragraph at lines 63--64
 ! pdfTeX error (\pdfsetmatrix): Unrecognized format..
 <to be read again> 
                    \endgroup \set@typeset@protect 
-l.64 	\end{itemize}
+l.89 	\end{itemize}
                    
 
  
 Here is how much of TeX's memory you used:
- 1795 strings out of 482862
- 26992 string characters out of 2953105
- 261744 words of memory out of 3000000
- 17430 multiletter control sequences out of 15000+200000
+ 3242 strings out of 482862
+ 47810 string characters out of 2953105
+ 474992 words of memory out of 3000000
+ 18853 multiletter control sequences out of 15000+200000
  536051 words of font info for 36 fonts, out of 3000000 for 9000
  0 hyphenation exceptions out of 8191
- 30i,6n,32p,441b,262s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 35i,7n,72p,441b,270s stack positions out of 5000i,500n,10000p,200000b,50000s
 !  ==> Fatal error occurred, no output PDF file produced!

@@ -6,6 +6,7 @@
 \usepackage{multicol}		%multicolumns
 \usepackage{tabto}
 \usepackage{listings}
+\usepackage{comment}
 
 \usepackage{color}
 
@@ -47,7 +48,8 @@
 
 \newpage
 \begin{abstract}
- Explanation of this article. Must be a synthesis
+This document is meant to be a small introductory guide to wolfssl.
+\\For the creation of this thesis I used the official wolfssl manual and some github repository related to wolfssl.
 \end{abstract}
 
 
@@ -249,7 +251,8 @@ Come si puo' vedere, lo scambio di messaggi e' cifrato.
 
 \chapter{Create a program using WolfSSL}
 \section{TCP application}
-To create an SSL program you can modify your TCP program added several SSL functions. To explain the migration from TCP to SSL, I created a simple chat between a client and a server.
+To create an SSL program you can modify your TCP program added several SSL functions. To explain the migration from TCP to SSL, I created a simple chat between a client and a server available on github.
+\begin{comment}
 \subsection{TCP Server}
 
 In my example, the TCP server after configuring the socket and connecting it with the client, it creates a ClientHandler thread that launches a thread for read and a thread for write from socket.
@@ -434,7 +437,7 @@ void *writeBuffer(void *args)
 
 \end{lstlisting}
 \pagebreak
-
+\end{comment}
 \section{From TCP to SSL}
 To create a wolfSSL application the first thing that I did is include the wolfSSL API header in your program.
 \begin{lstlisting}[language=c]
@@ -941,7 +944,7 @@ After the execution of the server, a client can connect to it and the ssl handsh
 
 In the Server Hello packet, the server has selected cipher suite 0x1301 (TLS\_AES\_128\_GCM\_SHA256) from the list of options given by the client.
 \\The server sends also a public key using the algorithm of the public key sent by the client. Once this is sent encryption keys can be calculated and the rest of the handshake will be encrypted.
-The rest of the packets are encrypted. The encrypted content will be the one shown by the chat in the next images, except some "hidden" packets, for example to send the username.
+The rest of the packets are encrypted. 
 
 \begin{figure}[H]
     \centering
@@ -973,23 +976,26 @@ To test the exact function of the programs, I sent several messages between the 
     \caption{Exchange messages. Server side}
     \label{fig:galaxy}
 \end{figure}
+\pagebreak
 
-
+As you can see, the messages are encrypted.
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.248]{./code/img/application_data.png}
     \caption{Application data}
     \label{fig:galaxy}
 \end{figure}
+\pagebreak
+These are the end of communication screens from the client and from the server:
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.6]{./code/img/3-client.png}
+    \includegraphics[scale=0.2]{./code/img/3-client.png}
     \caption{Execute WolfSSL client}
     \label{fig:galaxy}
 \end{figure}
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.6]{./code/img/4-server.png}
+    \includegraphics[scale=0.45]{./code/img/4-server.png}
     \caption{Execute WolfSSL client}
     \label{fig:galaxy}
 \end{figure}
