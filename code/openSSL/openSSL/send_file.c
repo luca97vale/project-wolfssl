@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 
     sendfile(fp, ssl);
     //puts("Send Success");
-    printf("Send Success, NumBytes = %ld\n", total);
+    printf("Send Success, NumBytes = %d\n", total);
     fclose(fp);
     close(sockfd);
     SSL_free(ssl);

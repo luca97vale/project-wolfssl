@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     char addr[INET_ADDRSTRLEN];
     printf("Start receive file: %s from %s\n", filename, inet_ntop(AF_INET, &clientaddr.sin_addr, addr, INET_ADDRSTRLEN));
     writefile(ssl, fp);
-    printf("Receive Success, NumBytes = %ld\n", total);
+    printf("Receive Success, NumBytes = %dd\n", total);
 
     SSL_free(ssl);
     SSL_CTX_free(ctx);
