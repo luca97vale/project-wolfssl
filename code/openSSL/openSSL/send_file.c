@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "ERROR: failed to create SSL_CTX\n");
         return -1;
     }
+    SSL_CTX_set_options(ctx,SSL_OP_NO_TLSv1_3);
 
     if (SSL_CTX_load_verify_locations(ctx, "./certs/CA-cert.pem", 0) != 1)
     {
@@ -72,6 +73,8 @@ int main(int argc, char *argv[])
         fprintf(stderr, "ERROR: failed to connect to SSL\n");
         return -1;
     }
+
+    
     char *filename = basename(argv[1]);
     if (filename == NULL)
     {
@@ -116,11 +119,11 @@ void sendfile(FILE *fp, SSL *ssl)
             perror("Read File Error");
             exit(1);
         }
-        if (SSL_write(ssl, sendline, strlen(sendline) == -1))
+        if (SSL_write(ssl, sendline, strlen(sendline)) <= 0)
         {
             perror("Can't send file");
             exit(1);
         }
-        memset(sendline, 0, MAX_LINE);
+        memset(sendline, 0, MAX_LINE);  
     }
 }

@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
     ctx = SSL_CTX_new(SSLv23_server_method());
+    SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv3);
     if (ctx == NULL)
     {
         fprintf(stderr, "ERROR: failed to create SSL_CTX\n");
@@ -45,8 +46,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    
-    SSL_CTX_set_options(ctx,SSL_OP_NO_TICKET);
+    //SSL_CTX_set_options(ctx,SSL_OP_NO_TICKET);
 
     struct sockaddr_in clientaddr, serveraddr;
     memset(&serveraddr, 0, sizeof(serveraddr));
@@ -81,9 +81,9 @@ int main(int argc, char *argv[])
         return -1;
     }
     SSL_set_fd(ssl, connfd);
+
     /* Establish TLS connection */
     int ret = SSL_accept(ssl);
-    printf("}here\n");
     if (ret < 0)
     {
         fprintf(stderr, "SSL_accept error = %d\n", SSL_get_error(ssl, ret));
@@ -103,9 +103,6 @@ int main(int argc, char *argv[])
         perror("Can't open file");
         exit(1);
     }
-    char buff[MAX_LINE] = {0};
-    int n = SSL_read(ssl, buff, sizeof(buff));
-    printf("%d\n",n);
     char addr[INET_ADDRSTRLEN];
     printf("Start receive file: %s from %s\n", filename, inet_ntop(AF_INET, &clientaddr.sin_addr, addr, INET_ADDRSTRLEN));
     writefile(ssl, fp);

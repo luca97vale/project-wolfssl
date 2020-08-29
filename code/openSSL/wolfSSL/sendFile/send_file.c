@@ -125,7 +125,7 @@ void sendfile(FILE *fp, WOLFSSL *ssl)
             perror("Read File Error");
             exit(1);
         }
-        if (wolfSSL_write(ssl, sendline, strlen(sendline)) == -1)
+        if (wolfSSL_write(ssl, sendline, strlen(sendline)) < 0)
         {
             perror("Can't send file");
             exit(1);
