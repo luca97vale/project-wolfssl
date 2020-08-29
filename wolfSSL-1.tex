@@ -1023,6 +1023,10 @@ The main differences are:
 \end{itemize}
 
 \section{Some tests}
+Command for creates a 1 GB txt file:
+\begin{lstlisting}[language=c]
+openssl rand -out sample.txt -base64 $(( 2**30 * 3/4 ))
+\end{lstlisting}
 
 
 
