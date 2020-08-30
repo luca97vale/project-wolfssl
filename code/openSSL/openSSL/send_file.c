@@ -11,9 +11,9 @@
 
 void sendfile(FILE *fp, SSL *ssl);
 ssize_t total = 0;
+SSL_CTX *ctx;
 int main(int argc, char *argv[])
 {
-    SSL_CTX *ctx;
     SSL *ssl;
     if (argc != 3)
     {
@@ -121,7 +121,7 @@ void sendfile(FILE *fp, SSL *ssl)
         }
         if (SSL_write(ssl, sendline, strlen(sendline)) <= 0)
         {
-            perror("Can't send file");
+            perror("Can't send file\n");
             exit(1);
         }
         memset(sendline, 0, MAX_LINE);  
