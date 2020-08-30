@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
         perror("Can't allocate sockfd");
         exit(1);
     }
-    ctx = SSL_CTX_new(SSLv23_server_method());
+    ctx = SSL_CTX_new(SSLv23_method());
     SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv3);
     if (ctx == NULL)
     {
@@ -90,8 +90,9 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+
     char filename[BUFFSIZE] = {0};
-    if (recv(connfd, filename, BUFFSIZE, 0) == -1)
+    if (SSL_read(ssl, filename, sizeof(filename)) < 0)
     {
         perror("Can't receive filename");
         exit(1);

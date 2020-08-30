@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+
     if ((ctx = SSL_CTX_new(SSLv23_client_method())) == NULL)
     {
         fprintf(stderr, "ERROR: failed to create SSL_CTX\n");
@@ -84,7 +85,7 @@ int main(int argc, char *argv[])
 
     char buff[BUFFSIZE] = {0};
     strncpy(buff, filename, strlen(filename));
-    if (send(sockfd, buff, BUFFSIZE, 0) == -1)
+    if (SSL_write(ssl, buff, strlen(buff)) == -1)
     {
         perror("Can't send filename");
         exit(1);
