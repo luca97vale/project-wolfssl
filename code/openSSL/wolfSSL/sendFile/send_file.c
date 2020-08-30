@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 
     char buff[BUFFSIZE] = {0};
     strncpy(buff, filename, strlen(filename));
-    if (send(sockfd, buff, BUFFSIZE, 0) == -1)
+    if (wolfSSL_write(ssl, buff, strlen(buff)) == -1)
     {
         perror("Can't send filename");
         exit(1);

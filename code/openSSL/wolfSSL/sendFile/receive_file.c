@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
     }
 
     char filename[BUFFSIZE] = {0};
-    if (recv(connfd, filename, BUFFSIZE, 0) == -1)
+    if (wolfSSL_read(ssl, filename, sizeof(filename)) < 0)
     {
         perror("Can't receive filename");
         exit(1);
@@ -122,8 +122,8 @@ void writefile(WOLFSSL *ssl, FILE *fp)
 {
     ssize_t n;
     char buff[MAX_LINE] = {0};
-    clock_t t; 
-    t = clock(); 
+    clock_t t;
+    t = clock();
     while ((n = wolfSSL_read(ssl, buff, sizeof(buff))) > 0)
     {
         total += n;
@@ -139,7 +139,7 @@ void writefile(WOLFSSL *ssl, FILE *fp)
         }
         memset(buff, 0, MAX_LINE);
     }
-    t = clock() - t; 
-    double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds 
-    printf("%f seconds to receive data \n", time_taken); 
+    t = clock() - t;
+    double time_taken = ((double)t) / CLOCKS_PER_SEC; // in seconds
+    printf("%f seconds to receive data \n", time_taken);
 }
