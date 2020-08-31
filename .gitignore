@@ -55,3 +55,7 @@ dkms.conf
 #executable
 client-tls
 server-tls-threaded
+receive_file
+send_file
+server-tcp-threaded
+client-tcp-threaded
