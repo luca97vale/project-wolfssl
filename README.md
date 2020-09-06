@@ -55,7 +55,7 @@ Server:
 ```
 Client:
 ```bash
-./send_file <IPv4 address>
+./send_file /path/to/file <IPv4 address>
 ```
 ## WolfSSL send file
 location: /code/sendFile/openSSL
@@ -71,6 +71,6 @@ Server:
 ```
 Client:
 ```bash
-./send_file <IPv4 address>
+./send_file /path/to/file  <IPv4 address>
 ```
 
