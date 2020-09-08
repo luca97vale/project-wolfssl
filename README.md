@@ -7,6 +7,7 @@ It is a threaded chat with ncurses.
 To create executable file you have to install wolfSSL and ncurses
 
 wolfssl: https://github.com/wolfSSL/wolfssl.git
+
 ncurses: 
 ```bash 
 sudo apt-get install libncurses5-dev libncursesw5-dev
