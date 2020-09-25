@@ -1,4 +1,4 @@
-\documentclass[a4paper,12pt]{report}
+\documentclass[a4paper,12pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{imakeidx}
 \usepackage{graphicx}
@@ -8,6 +8,7 @@
 \usepackage{listings}
 \usepackage{comment}
 \UseRawInputEncoding
+\usepackage{fancyvrb}
 
 \usepackage{color}
 
@@ -32,19 +33,31 @@
   tabsize=3
 }
 
+\usepackage[english]{babel}
+\usepackage{xcolor}
+\usepackage{adjustbox}
+\usepackage{verbatim}
+\definecolor{shadecolor}{rgb}{.10, .10, .10}
+
 \makeindex[columns=3]
 
 \pagenumbering{roman}
 
-%opening
-\title{WolfSSL}
-\author{Luca Valentini}
-\date{6 september 2020}
-
 \begin{document}
+
+%opening
+\title{WolfSSL
+\\
+{\normalsize Report for the Information System Security exam at the Politecnico di Torino}
+}
+\author{Luca Valentini (278487)
+\\
+}
+\date{september 2020}
+
+
 \maketitle
 \tableofcontents
-
 
 
 \newpage
@@ -52,12 +65,13 @@
 This document was intended as a small introductory guide to wolfssl.
 \\For the creation of this thesis I used the official wolfssl manual and some github repository related to wolfssl.
 \end{abstract}
+\newpage
 
 
 \pagenumbering{arabic}
-\chapter{SSL Protocol}
+\section{SSL Protocol}
 
-\section{Introduction}
+\subsection{Introduction}
 The SSL protool is a client/server protocol that provides the following basic security services to the communicating peers:
 \begin{itemize}
 	\item Authentication (both peer entity anda data origin authentication) services
@@ -94,7 +108,7 @@ The SSL consists of two sublayers and a few subprotocols:
 
 In spite of the fact that SSL consists of several subprotocols, we use the term \emph{SSL protocol} to refer to all of them simultaneously.
 
-\section{SSL Handshake}
+\subsection{SSL Handshake}
 The SSL handshake protocol is layered on top of the SSL record protocol. It allows a client and server to authenticate each other and to negotiate issues like cipher suites and compression methods.
 
 \begin{figure}[H]
@@ -134,28 +148,29 @@ The SSL handshake protocol comprises four sets of messages:
 
 At this point in time, the SSL handshake is complete and the client and server may start exchanging application-layer data.
 
-\chapter{WolfSSL}
-\section{Introduction}
+\section{WolfSSL}
+\subsection{Introduction}
 
-The wolfSSL embedded library is a lightweight SSL/TLS library written in ANSI C and targeted for embedded, RTOS, and resource-constrained
+The wolfSSL embedded library is a lightweight TLS library written in ANSI C and targeted for embedded, RTOS, and resource-constrained
 environments - primarily because of its small size, speed, and feature set; It's an SSL/TLS library optimized to run on embedded platforms.
-\\It's free and it has an excellent cross platform support.
-\\WolfSSL supports SSL 3.0, TLS(1.0,1.1,1.2,1.3), and DTLS(1.0,1.2).
-\\It also includes an OpenSSL compatibility interface with the most commonly used OpenSSL functions.
-\\WolfSSL is open source, licensed under the GNU General Public License GPLv2.
+It's free and it has an excellent cross platform support.
 
-\vspace{5mm} %5mm vertical space
+WolfSSL supports SSL 3.0, TLS(1.0, 1.1, 1.2, 1.3), and DTLS(1.0, 1.2).
+It also includes an OpenSSL compatibility interface with the most commonly used OpenSSL functions.
+WolfSSL is open source, licensed under the GNU General Public License GPLv2.
+
+%\vspace{5mm} %5mm vertical space
 This library is built for maximum portability and supports the C programming language as a primary interface. It also supports several other host languages, including Java (wolfSSL JNI), C\# (wolfSSL C\#), Python, and PHP and Perl.
 
-\vspace{5mm} %5mm vertical space
+%\vspace{5mm} %5mm vertical space
 To improve performance it supports hardware cryptography and acceleration on several platforms.
 
-\vspace{5mm} %5mm vertical space
+%\vspace{5mm} %5mm vertical space
 WolfSSL uses the following cryptography libraries:
 \begin{itemize}
 \item wolfCrypt
 \begin{itemize}
-\item Provides RSA, ECC, DSS, Diffie–Hellman, EDH, NTRU, DES, Triple DES, AES (CBC, CTR, CCM, GCM), Camellia, IDEA, ARC4, HC-128, ChaCha20, MD2, MD4, MD5, SHA-1, SHA-2, SHA-3, BLAKE2, RIPEMD-160, Poly1305, Random Number Generation, Large Integer support, and base 16/64 encoding/decoding.
+\item Provides RSA, ECC, DSS, Diffie?Hellman, EDH, NTRU, DES, Triple DES, AES (CBC, CTR, CCM, GCM), Camellia, IDEA, ARC4, HC-128, ChaCha20, MD2, MD4, MD5, SHA-1, SHA-2, SHA-3, BLAKE2, RIPEMD-160, Poly1305, Random Number Generation, Large Integer support, and base 16/64 encoding/decoding.
 \end{itemize}
 \item NTRU
 \begin{itemize}
@@ -164,7 +179,7 @@ WolfSSL uses the following cryptography libraries:
 \end{itemize}
 
 \cleardoublepage
-\section{Operating system supported}
+\subsection{Operating system supported}
 
 The operating systems supported are:
 \begin{multicols}{3}
@@ -173,7 +188,7 @@ The operating systems supported are:
 \end{enumerate}
 \end{multicols}
 \cleardoublepage
-\section{WolfSSL's features}
+\subsection{WolfSSL's features}
 \begin{itemize}
 \item Runtime memory usage between 1-36 kB
 \item Minimum footprint size of 20-100 kB, depending on build options and operating environment
@@ -224,37 +239,40 @@ The operating systems supported are:
 \item SSL Sniffer (SSL Inspection) Support
 \item IPv4 and IPv6 support
 \end{itemize}
-\chapter{Test case}
-\section{Client/Server provided by WolSSL}
+
+
+\section{Test case}
+\subsection{Client/Server provided by WolSSL}
 
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.5]{test/examples/client-server/server.png}
-    \caption{Server SSL}
+    \caption{Server TLS}
     
 \end{figure}
+
 
 \begin{figure}[H]+
     \centering
     \includegraphics[scale=0.225]{test/examples/client-server/client.png}
-    \caption{Client SSL}
+    \caption{Client TLS}
     
 \end{figure}
 
-In this example, the server is a simple SSL server that allows only one client connection; after the connection with a client, the server receives an encrypted message from client, it responds and quits.
-\\The -b parameter allows the server to bind to any interface instead of localhost only.
-\\
-\\After the connection with the server, the client sends a message (hello wolfssl!) and, after the server response, the client quits.
-\\The -h parameter allows the client to specify the server address to perform the connection.
+In this example, the server is a simple TLS server that allows only one client connection; after the connection with a client, the server receives an encrypted message from client, it responds and quits.
+The -b parameter allows the server to bind to any interface instead of localhost only.
+
+After the connection with the server, the client sends a message (hello wolfssl!) and, after the server response, the client quits.
+The -h parameter allows the client to specify the server address to perform the connection.
 
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.22]{test/examples/client-server/wireshark1.png}
-    \caption{All SSL packets sent}
+    \caption{All TLS packets sent}
     
 \end{figure}
 Client IP:  192.168.0.47 \hspace{4cm} Server IP: 192.168.0.53\\ \\
-As you can see from the figure above, the communication is initialized from client with a 'Client Hello'; after SSL handshake, there are 2 messages 'Application Data' sent respectively from the client to the server and from the server to the client, whose content is encrypted. Once the server sends a response to the client, the communication is closed.
+As you can see from the figure above, the communication is initialized from client with a 'Client Hello'; after TLS handshake, there are 2 messages 'Application Data' sent respectively from the client to the server and from the server to the client, whose content is encrypted. Once the server sends a response to the client, the communication is closed.
 
 \begin{figure}[H]
     \centering
@@ -264,14 +282,13 @@ As you can see from the figure above, the communication is initialized from clie
 \end{figure}
 
 
-\pagebreak
 \begin{comment}
-\section{EchoClient/EchoServer provided by WolfSSL}
+\subsection{EchoClient/EchoServer provided by WolfSSL}
 \begin{figure}[H]
 \hspace*{-1cm}     
     \centering
     \includegraphics[scale=0.25]{test/examples/echoclient-echoserver/echoServer.png}
-    \caption{EchoServer SSL}
+    \caption{EchoServer TLS}
     
 \end{figure}
 
@@ -279,7 +296,7 @@ As you can see from the figure above, the communication is initialized from clie
 \hspace*{-1cm}     
     \centering
     \includegraphics[scale=0.25]{test/examples/echoclient-echoserver/echoClient.png}
-    \caption{EchoClient SSL}
+    \caption{EchoClient TLS}
     
 \end{figure}
 
@@ -287,16 +304,16 @@ As you can see from the figure above, the communication is initialized from clie
 \hspace*{-2cm}     
     \centering
     \includegraphics[scale=0.3]{test/examples/echoclient-echoserver/wireshark.png}
-    \caption{All SSL packets sent}
+    \caption{All TLS packets sent}
     
 \end{figure}
 \end{comment}
 
-\chapter{Create a program using WolfSSL}
-\section{TCP application}
-To create an SSL program you can modify your TCP program by adding several SSL functions. To explain the migration from TCP to SSL, I created a simple chat between a client and a server. The code of this program isn't reported in this text but it is available on github.
+\section{Create a program using WolfSSL}
+\subsection{TCP application}
+To create a TLS program you can modify your TCP program by adding several TLS functions. To explain the migration from TCP to TLS, I created a simple chat between a client and a server. The code of this program isn't reported in this text but it is available on github.
 
-\vspace{5mm} %5mm vertical space
+%\vspace{5mm} %5mm vertical space
 In the picture there is a wireshark screenshot to see the data traffic of a tcp application; this image with the next sections allows to understand the difference between an application with or without encryption.
 
 \begin{figure}[H]
@@ -492,15 +509,15 @@ void *writeBuffer(void *args)
 }
 
 \end{lstlisting}
-\pagebreak
 \end{comment}
-\section{From TCP to SSL}
+\subsection{From TCP to TLS}
 To create a wolfSSL application the first thing that I did was including the wolfSSL API header in my program.
 \begin{lstlisting}[language=c]
 #include <wolfssl/ssl.h>
 \end{lstlisting}
 After the inclusion of the header files, I initialized the library and the WOLFSSL\_CTX calling \textbf{wolfSSL\_Init}; it is necessary to use the library.
-\\\\ The WOLFSSL\_CTX structure contains global values for each SSL connection, including certificate information.
+
+The WOLFSSL\_CTX structure contains global values for each SSL connection, including certificate information.
 To create a new WOLFSSL\_CTX there is \textbf{wolfSSL\_CTX\_new()} function. It requires an argument which defines the SSL or TLS protocol for the client or server to use. In my case I used TLS 1.3, so the call is: 
 \begin{lstlisting}[language=c]
 WOLFSSL_CTX *ctx = wolfSSL_CTX_new(wolfTLSv1_3_server_method());
@@ -510,15 +527,17 @@ for the server;
 WOLFSSL_CTX *ctx = wolfSSL_CTX_new(wolfTLSv1_3_client_method())
 \end{lstlisting}
 for the client.
-\\\\In the WOLFSSL\_CTX the CA (Certificate Authority) can be loaded so that the client is able to verify the server's identity when they start the connection. To load the CA into the WOLFSSL\_CTX there is \\\textbf{wolfSSL\_CTX\_load\_verify\_locations()}. This function requires three arguments:
+
+In the WOLFSSL\_CTX the CA (Certificate Authority) can be loaded so that the client is able to verify the server's identity when they start the connection. To load the CA into the WOLFSSL\_CTX there is \\\textbf{wolfSSL\_CTX\_load\_verify\_locations()}. This function requires three arguments:
 \begin{itemize}
 \item a WOLFSSL\_CTX pointer
 \item a certificate file
 \item a path value that point to a directory which should contain CA certificates in PEM format.
 \end{itemize}
 this function returns SSL\_SUCCESS or SSL\_FAILURE.
-\\\textbf{wolfSSL\_CTX\_load\_verify\_locations()} can be used to verify the certificate of the servers by the client.
-\\The server loads a certificate file into the SSL context (WOLFSSL\_CTX) through this function:
+
+\textbf{wolfSSL\_CTX\_load\_verify\_locations()} can be used to verify the certificate of the servers by the client.
+The server loads a certificate file into the TLS context (WOLFSSL\_CTX) through this function:
 \begin{lstlisting}[language=c]
 int wolfSSL_CTX_use_certificate_file(ctx, CERT_FILE, SSL_FILETYPE_PEM);
 \end{lstlisting}
@@ -535,30 +554,33 @@ WOLFSSL* ssl;
 ssl = wolfSSL_new(ctx);
 wolfSSL_set_fd(ssl,sockfd);
 \end{lstlisting}
-After the previous instructions called by client and server, the server waits for an SSL client to initiate the SSL handshake; it waits until a client calls \textbf{wolfSSL\_connect(ssl)} and then the handshake starts.
-\\\\Once the connection functions were set, I replaced \textbf{read(...)} function with: 
+After the previous instructions called by client and server, the server waits for a TLS client to initiate the SSL handshake; it waits until a client calls \textbf{wolfSSL\_connect(ssl)} and then the handshake starts.
+
+Once the connection functions were set, I replaced \textbf{read(...)} function with: 
 \begin{lstlisting}[language=c]
 int wolfSSL_read(WOLFSSL *ssl, void *data, int sz);
 \end{lstlisting}
 It read \textbf{sz} bytes from the SSL session \textbf{ssl} internal read buffer into the buffer \textbf{data}. The bytes are removed from the internal receive buffer;
-\\\\Instead the \textbf{write(...)} function is replaced by:
+
+Instead the \textbf{write(...)} function is replaced by:
 \begin{lstlisting}[language=c]
 int wolfSSL_write(WOLFSSL *ssl, void *data, int sz);
 \end{lstlisting}
 It writes \textbf{sz} bytes from the buffer, \textbf{data}, to the SSL connection, \textbf{ssl}.
-\\\\When the application is over, the WOLFSSL\_CTX object and the wolfSSL library must be freed; the instructions are:
+
+When the application is over, the WOLFSSL\_CTX object and the wolfSSL library must be freed; the instructions are:
 \begin{lstlisting}[language=c]
 wolfSSL_free(ssl);
 wolfSSL_CTX_free(ctx);
 wolfSSL_Cleanup();
 \end{lstlisting}
 
-\pagebreak
-\section{SSL application}
-To develop an SSL application, I started from the TCP chat explained in the previous section and I added the wolfSSL function to create an encrypted communication.
+
+\subsection{SSL application}
+To develop a TlS application, I started from the TCP chat explained in the previous subsection and I added the wolfSSL function to create an encrypted communication.
 \\The goal of this program is to show how to create a simple encrypted chat, focusing on the security of an application, rather than on the good practices of the socket and thread applications.
 \\Some parts of the code like inclusion and global variables are omitted (wolfSSL object and other variables are stored in global memory); 
-\\In the next subsections I'll try to explain the code of the program:
+\\In the next sections I'll try to explain the code of the program:
 \subsection{SSL Server}
 For testing purpose, all the certificates that I use and the server private key were taken from wolfSSL download.
 \\After the initialization of the wolfSSL and the socket, the main function marks the socket referred to by sockfd as a passive socket, that is, as a socket that will be used to accept incoming connection requests using accept.
@@ -802,10 +824,11 @@ void *readBuffer(void *args)
     }
 }
 \end{lstlisting}
-\pagebreak
-\subsection{SSL Client}
-The SSL client has 3 thread; The main function creates Tclient thread that is used to manage read and write threads.
-\\To execute the SSL client, the program needs the IP address of server. If the user doesn't provide it during the program calls, the program ends. 
+
+\subsection{TLS Client}
+The TLS client has 3 thread; The main function creates Tclient thread that is used to manage read and write threads.
+
+To execute the TLS client, the program needs the IP address of server. If the user doesn't provide it during the program calls, the program ends. 
 \begin{lstlisting}[caption={int main() of SSL client},captionpos=b][language=c]
 int main(int argc, char **argv)
 {
@@ -953,15 +976,16 @@ void *client(void *args)
 
 Reading and writing threads are similar to the server part, so I'm not putting them in this text.
 
-\section{Compile a WolfSSL program}
+\subsection{Compile a WolfSSL program}
 To execute a wolfSSL program you must have installed wolfSSL on your pc, and then you must add \textbf{-lwolfssl} on your gcc command.
-\\In this program I used threads and ncurses so I had to add \textbf{-pthread} and \textbf{-lncurses} flags to gcc command; to optimize the compilation I created a makefile.
 
-\section{Execute a WolfSSL program}
+In this program I used threads and ncurses so I had to add \textbf{-pthread} and \textbf{-lncurses} flags to gcc command; to optimize the compilation I created a makefile.
+
+\subsection{Execute a WolfSSL program}
 In my project I used a laptop for the client part, and a Raspberry Pi for the server part; they are connected to the same LAN.
-\\In the pictures below you can see the GUI of the client and the server part, and the traffic analyze with wireshark.
-\\The IP address of server is \textbf{192.168.0.53} and the port is \textbf{11111}.
-\\The IP address of client is \textbf{192.168.0.46}\\
+In the pictures below you can see the GUI of the client and the server part, and the traffic analyze with wireshark.
+The IP address of server is \textbf{192.168.0.53} and the port is \textbf{11111}.
+The IP address of client is \textbf{192.168.0.46}\\
 
 \begin{figure}[H]
     \centering
@@ -978,8 +1002,10 @@ In my project I used a laptop for the client part, and a Raspberry Pi for the se
 \end{figure}
 
 After the execution of the server, a client can connect to it and the ssl handshake starts.
-\\With the hello packet below, the client provides an ordered list of 27 cipher suites that it will support for encryption. The list is in the order preferred by the client, with highest preference first. This list can be modified by the programmer.
-\\In this case, the client provides a list of optional extension which the server can use to take action or enable new features, for example:
+
+With the hello packet below, the client provides an ordered list of 27 cipher suites that it will support for encryption. The list is in the order preferred by the client, with highest preference first. This list can be modified by the programmer.
+
+In this case, the client provides a list of optional extension which the server can use to take action or enable new features, for example:
 \begin{itemize}
 \item key\_share 
 \begin{itemize}
@@ -999,7 +1025,7 @@ After the execution of the server, a client can connect to it and the ssl handsh
 
 
 In the Server Hello packet, the server has selected cipher suite 0x1301 (TLS\_AES\_128\_GCM\_SHA256) from the list of options given by the client.
-\\The server also sends a public key using the algorithm of the public key sent by the client. Once this is sent,the rest of the communication will be encrypted.
+The server also sends a public key using the algorithm of the public key sent by the client. Once this is sent,the rest of the communication will be encrypted.
 
 \begin{figure}[H]
     \centering
@@ -1007,7 +1033,7 @@ In the Server Hello packet, the server has selected cipher suite 0x1301 (TLS\_AE
     \caption{Server Hello}
     
 \end{figure}
-\pagebreak
+
 
 After the SSL handshake the situation in the server GUI is:
 \begin{figure}[H]
@@ -1017,7 +1043,8 @@ After the SSL handshake the situation in the server GUI is:
     
 \end{figure}
 
-\pagebreak
+
+
 To test the exact function of the programs, I sent several messages between the laptop and the raspberry:
 \begin{figure}[H]
     \centering
@@ -1031,7 +1058,7 @@ To test the exact function of the programs, I sent several messages between the 
     \caption{Exchange messages. Server side}
     
 \end{figure}
-\pagebreak
+
 
 As you can see, the messages are encrypted.
 \begin{figure}[H]
@@ -1040,7 +1067,7 @@ As you can see, the messages are encrypted.
     \caption{Application data}
     
 \end{figure}
-\pagebreak
+
 These are the end of communication screens from the client and from the server:
 \begin{figure}[H]
     \centering
@@ -1055,8 +1082,8 @@ These are the end of communication screens from the client and from the server:
     
 \end{figure}
 
-\chapter{Differences between WolfSSL and OpenSSL}
-\section{Differences}
+\section{Differences between WolfSSL and OpenSSL}
+\subsection{Differences}
 
 The main differences are:
 \begin{itemize}
@@ -1074,10 +1101,11 @@ The main differences are:
 \end{itemize}
 \end{itemize}
 
-\section{Build size and speed test}
+\subsection{Build size and speed test}
 I installed openSSL and wolfSSL in a Raspberry Pi 4 and I could see the difference in occupancy on disk:
-\\OpenSSL occupies 412.5 MB while wolfSSL only 47 MB. This difference also affects the compilation and installation time; WolfSSL is compiled and installed in about 3 minutes while openSSL takes at least 10 minutes.
-\\\\Wolfssl is definitely made for embedded systems, but how much can the data forwarding performance differ?
+OpenSSL occupies 412.5 MB while wolfSSL only 47 MB. This difference also affects the compilation and installation time; WolfSSL is compiled and installed in about 3 minutes while openSSL takes at least 10 minutes.
+
+Wolfssl is definitely made for embedded systems, but how much can the data forwarding performance differ?
 \\To answer this question I created two program that exchange data between a Raspberry and a laptop, one for wolfSSL and one for openSSL. In the specification, one of the two reads a file and sends the read content to the other one.
 The two programs are identical, the only difference are the function calls. One program has the functions of openssl and the other of wolfssl.
 \\For the wolfSSL I used the same certificates and key used in the previous program, while for the openSSL I created a root CA certificate, a server key and a certificate signing request with these commands:
@@ -1085,12 +1113,13 @@ The two programs are identical, the only difference are the function calls. One 
 openssl genrsa -des3 -out CA-key.pem 2048
 openssl req -new -key CA-key.pem -x509 -days 1000 -out CA-cert.pem
 openssl genrsa -des3 -out server-key.pem 2048
-openssl req –new –config openssl.cnf –key server-key.pem –out signingReq.csr
+openssl req ?new ?config openssl.cnf ?key server-key.pem ?out signingReq.csr
 openssl x509 -req -days 365 -in signingReq.csr -CA CA-cert.pem -CAkey CA-key.pem -CAcreateserial -out server-cert.pem
 \end{lstlisting}
 
 I created these programs to measure the data forwarding time.
-\\The functions under examination are:
+
+The functions under examination are:
 
 \begin{lstlisting}[caption={openSSL function},captionpos=b][language=c]
 void writefile(SSL *ssl, FILE *fp)
@@ -1149,7 +1178,8 @@ void writefile(WOLFSSL *ssl, FILE *fp)
 }
 \end{lstlisting}
 The rest of the code is on github.
-\\\\For the following test I created 3 files size about 100 MB, 500 MB and 1 GB with these commands:
+
+For the following test I created 3 files size about 100 MB, 500 MB and 1 GB with these commands:
 \begin{lstlisting}[caption={openSSL commands},captionpos=b][language=bash]
 103.9MB = openssl rand -out sample.txt -base64 $(( 2**30 * 1/14 ))
 545.3 MB = openssl rand -out sample.txt -base64 $(( 2**29* 3/4 ))
@@ -1190,15 +1220,17 @@ The time is in seconds. (time also includes writing the file)
 OpenSSL is more performing than wolfssl; the difference of time is relevant.
 Only by sending large amounts of data you can see the difference between them, but wolfSSL being born for embedded systems works very well and above all it takes up less space.
 
-\chapter{Conclusion}
+\section{Conclusion}
 WolfSSL is a beautifull very well done library. They have a forum where thousand of users report their problems and solutions, in which employees too are very active.
-\\A problem of wolfSSL manual is tha lack of some details in some sections, such as in the difference with openSSL and its self-promotion orientation.
-\\ I think that this thesis can be a good starter guide to get information about wolfSSL since it is difficult to find material from the non official channels.
 
-\vspace{5mm} %5mm vertical space
+A problem of wolfSSL manual is tha lack of some details in some sections, such as in the difference with openSSL and its self-promotion orientation.
+
+I think that this thesis can be a good starter guide to get information about wolfSSL since it is difficult to find material from the non official channels.
+
+%\vspace{5mm} %5mm vertical space
 It is actively being used in a wide range of markets and products including the smart grid, IoT, industrial automation, connected home, M2M, auto industry, games, applications, databases, sensors, VoIP, routers, appliances, cloud services, and more; since wolfSSL is widely employed at a corporate level, there is a great lack of open source projects on the net.
 
-\vspace{5mm} %5mm vertical space
+%\vspace{5mm} %5mm vertical space
 In the future I intend to carry on this research, also focusing on wolfSSL's other products, such as wolfSSH, wolfCrypt, etc.
 
 

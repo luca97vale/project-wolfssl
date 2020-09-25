@@ -122,10 +122,11 @@ void writefile(WOLFSSL *ssl, FILE *fp)
 {
     ssize_t n;
     char buff[MAX_LINE] = {0};
-    clock_t t;
+    clock_t t,sum = 0;
     t = clock();
     while ((n = wolfSSL_read(ssl, buff, sizeof(buff))) > 0)
     {
+        sum += clock() - t;
         total += n;
         if (n == -1)
         {
@@ -138,8 +139,9 @@ void writefile(WOLFSSL *ssl, FILE *fp)
             exit(1);
         }
         memset(buff, 0, MAX_LINE);
+        t = clock();
     }
-    t = clock() - t;
-    double time_taken = ((double)t) / CLOCKS_PER_SEC; // in seconds
+    //t = clock() - t;
+    double time_taken = ((double)sum) / CLOCKS_PER_SEC; // in seconds
     printf("%f seconds to receive data \n", time_taken);
 }
