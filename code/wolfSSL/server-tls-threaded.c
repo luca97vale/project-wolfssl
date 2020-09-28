@@ -30,142 +30,136 @@
 #define CERT_FILE "./certs/server-cert.pem"
 #define KEY_FILE "./certs/server-key.pem"
 
-//Global Variables
-WOLFSSL_CTX *ctx;
-WOLFSSL *ssl;
-size_t len;
-char buff[256];
-char buffReader[256];
-char username[256];
-int sockfd;
-int connd;
-struct sockaddr_in servAddr;
-struct sockaddr_in clientAddr;
-socklen_t size = sizeof(clientAddr);
-//struct targ_pkg *pkg;
-extern char Rbuffer[256];
-//create Thread Reader
+//Global variables
+int counter = 0; //counter of connected clients
+pthread_t Taccept;
 pthread_t Treader;
-//create Thread Writer
-pthread_t Twriter;
-int is_end = 0;
+int sockfd;
+struct sockaddr_in servAddr;
+WOLFSSL_CTX *ctx;
+
+struct communication
+{
+    WOLFSSL *ssl;
+    size_t len;
+    pthread_t Taccept;
+    int connd;
+    struct sockaddr_in clientAddr;
+    socklen_t size;
+    char buffReader[256];
+    char username[256];
+};
+
+struct communication clients[10];
+
+void removeClient(int id)
+{
+    /* Cleanup after this connection */
+    wolfSSL_free(clients[id].ssl); /* Free the wolfSSL object              */
+    close(clients[id].connd);        /* Close the connection to the client   */
+    clients[id].ssl = NULL;
+}
 
 void *readBuffer(void *args)
 {
     int ret;
+    int id = *((int *)args);
+    //Read the username
+    XMEMSET(clients[id].buffReader, 0, sizeof(clients[id].buffReader));
+    ret = wolfSSL_read(clients[id].ssl, clients[id].buffReader, sizeof(clients[id].buffReader) - 1);
+    strcpy(clients[id].username, clients[id].buffReader);
     while (1)
     {
         /* Read the client data into our buff array */
-        XMEMSET(buffReader, 0, sizeof(buffReader));
-        ret = wolfSSL_read(ssl, buffReader, sizeof(buffReader) - 1);
-
-        if (ret > 0)
+        XMEMSET(clients[id].buffReader, 0, sizeof(clients[id].buffReader));
+        if (clients[id].ssl != NULL)
         {
-            if (!strcmp(buffReader, "quit"))
+            ret = wolfSSL_read(clients[id].ssl, clients[id].buffReader, sizeof(clients[id].buffReader) - 1);
+
+            if (ret > 0)
             {
-                pthread_cancel(Twriter);
+                if (!strcmp(clients[id].buffReader, "quit"))
+                {
+                    removeClient(id);
+                    pthread_exit(NULL); /* End theread execution                */
+                }
+                printText(clients[id].buffReader, clients[id].username);
+                int len = XSTRLEN(clients[id].buffReader);
+                for (int i = 0; i < counter; i++)
+                {
+                    if (i != id)
+                    {
+                        ret = wolfSSL_write(clients[i].ssl, clients[id].username, XSTRLEN(clients[id].username));
+                        ret = wolfSSL_write(clients[i].ssl, clients[id].buffReader, len);
+                    }
+                }
+            }
+            else
+            {
+                printText("ERROR READ!!", "System");
                 pthread_exit(NULL); /* End theread execution                */
             }
-            printText(buffReader, username);
-        }
-        else
-        {
-            printText("ERROR READ!!", "System");
-            pthread_cancel(Twriter);
-            pthread_exit(NULL); /* End theread execution                */
         }
     }
+    free(args);
 }
 
-void *writeBuffer(void *args)
+void *acceptConnection(void *args)
 {
     int ret;
-    while (1)
-    {
-        read_in();
-        len = XSTRLEN(Rbuffer);
-
-        /* Reply back to the client */
-        do
-        {
-            ret = wolfSSL_write(ssl, Rbuffer, len);
-            /* TODO: Currently this thread can get stuck infinitely if client
-         *       disconnects, add timer to abort on a timeout eventually,
-         *       just an example for now so allow for possible stuck condition
-         */
-            printText(Rbuffer, "Server");
-
-        } while (wolfSSL_want_write(ssl));
-
-        if (XSTRNCMP(Rbuffer, "quit", 4) == 0)
-        {
-            is_end = 1;
-            break;
-        }
-
-        if (ret != len)
-        {
-            printText("ERROR!!", "System");
-            break;
-        }
-    }
-    pthread_cancel(Treader);
-    return NULL;
-}
-
-void *ClientHandler(void *args)
-{
-    int ret;
-    /*********************** USERNAME */
-    /* Read the client username into our buff array */
-    XMEMSET(buff, 0, sizeof(buff));
-    ret = wolfSSL_read(ssl, buff, sizeof(buff) - 1);
     ncurses_start();
     clearWin();
-    if (ret > 0)
+    while (1)
     {
-        /* Print to stdout any data the client sends */
-        strcpy(username, buff);
-        char text[256];
-        sprintf(text, "Client %s connected successfully", username);
-        printText(text, "System");
-        printText("***************************\n", "System");
-        fflush(stdout);
-    }
-    else
-    {
-        printText("ERROR!!", "System");
-        close(sockfd);      /* Close the connection to the server   */
-        pthread_exit(NULL); /* End theread execution                */
-    }
-    /****************************    */
-    XMEMSET(buff, 0, sizeof(buff));
+        //printText("Waiting for a connection...\n","System");
+        /* Accept client connections */
+        clients[counter].size = sizeof(clients[counter].clientAddr);
+        if ((clients[counter].connd = accept(sockfd, (struct sockaddr *)&clients[counter].clientAddr, &clients[counter].size)) == -1)
+        {
+            fprintf(stderr, "ERROR: failed to accept the connection\n\n");
+            return NULL;
+        }
 
-    if (pthread_create(&Treader, NULL, readBuffer, NULL))
-    {
-        fprintf(stderr, "Error creating thread\n");
-        fflush(stdout);
-        return NULL;
-    }
+        /* Create a WOLFSSL object */
+        if ((clients[counter].ssl = wolfSSL_new(ctx)) == NULL)
+        {
+            fprintf(stderr, "ERROR: failed to create WOLFSSL object\n");
+            return NULL;
+        }
 
-    if (pthread_create(&Twriter, NULL, writeBuffer, NULL))
-    {
-        fprintf(stderr, "Error creating thread\n");
-        fflush(stdout);
-        return NULL;
-    }
+        /* Attach wolfSSL to the socket */
+        wolfSSL_set_fd(clients[counter].ssl, clients[counter].connd);
 
-    pthread_join(Treader, NULL);
-    pthread_join(Twriter, NULL);
-    /* Cleanup after this connection */
-    close(connd);       /* Close the connection to the client   */
-    pthread_exit(NULL); /* End theread execution                */
+        /* Establish TLS connection */
+        ret = wolfSSL_accept(clients[counter].ssl);
+        if (ret != SSL_SUCCESS)
+        {
+            ncurses_end();
+            fprintf(stderr, "wolfSSL_accept error = %d\n",
+                    wolfSSL_get_error(clients[counter].ssl, ret));
+            return NULL;
+        }
+        printText("Client connected successfully\n", "System");
+        int *argCounter = malloc(sizeof(*argCounter));
+        if (argCounter == NULL)
+        {
+            fprintf(stderr, "Couldn't allocate memory for thread arg.\n");
+            exit(EXIT_FAILURE);
+        }
+
+        *argCounter = counter;
+        if (pthread_create(&Treader, NULL, readBuffer, argCounter))
+        {
+            fprintf(stderr, "Error creating thread\n");
+            fflush(stdout);
+            return NULL;
+        }
+        counter++;
+    }
 }
 
 int main()
 {
-    int ret;
-
     /* Initialize wolfSSL */
     wolfSSL_Init();
 
@@ -177,14 +171,15 @@ int main()
         fprintf(stderr, "ERROR: failed to create the socket\n");
         return -1;
     }
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0)
+        printf("setsockopt(SO_REUSEADDR) failed");
     /* Create and initialize WOLFSSL_CTX */
 
-    if ((ctx = wolfSSL_CTX_new(wolfTLSv1_3_server_method())) == NULL)
+    if ((ctx = wolfSSL_CTX_new(wolfTLSv1_2_server_method())) == NULL)
     {
         fprintf(stderr, "ERROR: failed to create WOLFSSL_CTX\n");
         return -1;
     }
-
 
     /* Load server certificates into WOLFSSL_CTX */
     if (wolfSSL_CTX_use_certificate_file(ctx, CERT_FILE, SSL_FILETYPE_PEM) != SSL_SUCCESS)
@@ -218,59 +213,20 @@ int main()
     }
 
     /* Listen for a new connection */
-    if (listen(sockfd, 1) == -1)
+    if (listen(sockfd, 10) == -1)
     {
         fprintf(stderr, "ERROR: failed to listen\n");
         return -1;
     }
-    /* Continue to accept clients until shutdown is issued */
-    while (1)
+
+    if (pthread_create(&Taccept, NULL, acceptConnection, NULL))
     {
-        printf("Waiting for a connection...\n");
-        /* Accept client connections */
-        if ((connd = accept(sockfd, (struct sockaddr *)&clientAddr, &size)) == -1)
-        {
-            fprintf(stderr, "ERROR: failed to accept the connection\n\n");
-            return -1;
-        }
-
-        /* Create a WOLFSSL object */
-        if ((ssl = wolfSSL_new(ctx)) == NULL)
-        {
-            fprintf(stderr, "ERROR: failed to create WOLFSSL object\n");
-            return -1;
-        }
-
-        /* Attach wolfSSL to the socket */
-        wolfSSL_set_fd(ssl, connd);
-
-        /* Establish TLS connection */
-        ret = wolfSSL_accept(ssl);
-        if (ret != SSL_SUCCESS)
-        {
-            fprintf(stderr, "wolfSSL_accept error = %d\n",
-                    wolfSSL_get_error(ssl, ret));
-            return -1;
-        }
-
-        printf("Client connected successfully\n");
-        pthread_t mainThread;
-        pthread_create(&mainThread, NULL, ClientHandler, NULL);
-        pthread_join(mainThread, NULL);
-        printText("Communication is ended!\n", "System");
-
-        if (is_end)
-            break;
+        fprintf(stderr, "Error creating thread\n");
+        fflush(stdout);
+        return -1;
     }
-    ncurses_end();
-    printf("Shutdown complete\n");
 
-    /* Cleanup after this connection */
-    wolfSSL_free(ssl); /* Free the wolfSSL object              */
-    close(connd);      /* Close the connection to the client   */
-    /* Cleanup and return */
-    wolfSSL_CTX_free(ctx); /* Free the wolfSSL context object          */
-    wolfSSL_Cleanup();     /* Cleanup the wolfSSL environment          */
-    close(sockfd);         /* Close the socket listening for clients   */
-    return 0;              /* Return reporting a success               */
+    pthread_join(Taccept, NULL);
+
+    return 0;
 }

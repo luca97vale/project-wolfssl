@@ -59,7 +59,6 @@ void *writeBuffer(void *args)
         if (XSTRNCMP(Rbuffer, "quit", 4) == 0)
         {
             is_end = 1;
-            pthread_cancel(Treader);
         }
         /* Send the message to the server */
         if (wolfSSL_write(ssl, Rbuffer, len) != len)
@@ -74,7 +73,6 @@ void *writeBuffer(void *args)
 
 void *readBuffer(void *args)
 {
-    char username[256];
     while (!is_end)
     {
         /* Read the server data into our buff array */
@@ -85,17 +83,9 @@ void *readBuffer(void *args)
             pthread_cancel(Twriter);
             return NULL;
         }
-        strcpy(username,buffReader);
-        memset(buffReader, 0, sizeof(buffReader));
-        if (wolfSSL_read(ssl, buffReader, sizeof(buffReader) - 1) == -1)
-        {
-            fprintf(stderr, "ERROR: failed to read\n");
-            pthread_cancel(Twriter);
-            return NULL;
-        }
         else
         {
-            printText(buffReader, username);
+            printText(buffReader, "Server");
         }
     }
     return NULL;
@@ -126,7 +116,7 @@ void *client(void *args)
     }
 
     /* Create and initialize WOLFSSL_CTX */
-    if ((ctx = wolfSSL_CTX_new(wolfTLSv1_2_client_method())) == NULL)
+    if ((ctx = wolfSSL_CTX_new(wolfTLSv1_3_client_method())) == NULL)
     {
         fprintf(stderr, "ERROR: failed to create WOLFSSL_CTX\n");
         return NULL;
