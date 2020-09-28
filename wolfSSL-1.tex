@@ -576,8 +576,11 @@ wolfSSL_Cleanup();
 \end{lstlisting}
 
 
-\subsection{SSL application}
-To develop a TlS application, I started from the TCP chat explained in the previous subsection and I added the wolfSSL function to create an encrypted communication.
+\subsection{TLS application}
+\subsubsection{iterative program}
+***Explanation of the iterative program developed by me; remember to describe how it work, especially say that is a 1-1 client server; client can write only if the server write before.***
+
+To develop a TLS application, I started from the TCP chat explained in the previous subsection and I added the wolfSSL function to create an encrypted communication.
 \\The goal of this program is to show how to create a simple encrypted chat, focusing on the security of an application, rather than on the good practices of the socket and thread applications.
 \\Some parts of the code like inclusion and global variables are omitted (wolfSSL object and other variables are stored in global memory); 
 \\In the next sections I'll try to explain the code of the program:
@@ -1223,7 +1226,7 @@ Only by sending large amounts of data you can see the difference between them, b
 \section{Conclusion}
 WolfSSL is a beautiful very well done library. They have a forum where thousand of users report their problems and solutions, in which employees too are very active.
 
-A problem of wolfSSL manual is tha lack of some details in some sections, such as in the difference with openSSL and its self-promotion orientation.
+A problem of wolfSSL manual is the lack of some details in some sections, such as in the difference with openSSL and its self-promotion orientation.
 
 I think that this thesis can be a good starter guide to get information about wolfSSL since it is difficult to find material from the non official channels.
 

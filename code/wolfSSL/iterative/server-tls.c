@@ -42,6 +42,7 @@ socklen_t size = sizeof(clientAddr);
 //struct targ_pkg *pkg;
 extern char Rbuffer[256];
 int is_end = 0;
+int client_is_end = 0;
 
 int readBuffer()
 {
@@ -54,7 +55,7 @@ int readBuffer()
     {
         if (!strcmp(buffReader, "quit"))
         {
-            is_end = 1;
+            client_is_end = 1;
         }
         printText(buffReader, username);
     }
@@ -124,13 +125,14 @@ void ClientHandler()
     /****************************    */
     XMEMSET(buff, 0, sizeof(buff));
 
-    while (!is_end)
+    while (!is_end && !client_is_end)
     {
         writeBuffer();
-        if (!is_end) readBuffer();
+        if (!is_end && !client_is_end)
+            readBuffer();
     }
     /* Cleanup after this connection */
-    close(connd);       /* Close the connection to the client   */
+    close(connd); /* Close the connection to the client   */
 }
 
 int main()
@@ -148,6 +150,12 @@ int main()
         fprintf(stderr, "ERROR: failed to create the socket\n");
         return -1;
     }
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0)
+    {
+        printf("setsockopt(SO_REUSEADDR) failed");
+        return -1;
+    }
+
     /* Create and initialize WOLFSSL_CTX */
 
     if ((ctx = wolfSSL_CTX_new(wolfTLSv1_2_server_method())) == NULL)
@@ -194,7 +202,7 @@ int main()
         return -1;
     }
     /* Continue to accept clients until shutdown is issued */
-    while (1)
+    while (!is_end)
     {
         printf("Waiting for a connection...\n");
         /* Accept client connections */
@@ -226,9 +234,7 @@ int main()
         printf("Client connected successfully\n");
         ClientHandler();
         printText("Communication is ended!\n", "System");
-
-        if (is_end)
-            break;
+        client_is_end = 0;
     }
     ncurses_end();
     printf("Shutdown complete\n");

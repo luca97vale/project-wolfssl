@@ -1,10 +1,8 @@
 # Project-wolfssl
 In this repo you can find a simple wolfSSL chat, a TCP chat and a openSSL or wolfSSL send file program.
 
-## WolfSSL chat 
-location: ./code/wolfSSL
-It is a threaded chat with ncurses.
-To create executable file you have to install wolfSSL and ncurses
+# WolfSSL chat
+In this project, to create executable file you have to install wolfSSL and ncurses
 
 wolfssl: https://github.com/wolfSSL/wolfssl.git
 
@@ -12,6 +10,29 @@ ncurses:
 ```bash 
 sudo apt-get install libncurses5-dev libncursesw5-dev
 ```
+## Iterative program (WolfSSL Chat)
+location: ./code/wolfSSL/iterative
+It is an iterative chat between a client a and a server.
+
+### Installation
+```bash
+make
+```
+### Execution
+Server:
+```bash
+./server-tls
+```
+Client:
+```bash
+./client-tls <IPv4 address>
+```
+
+
+## Threaded program
+location: ./code/wolfSSL
+It is a threaded chat with ncurses.
+
 ### Installation
 ```bash
 make

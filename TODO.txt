@@ -1,0 +1,7 @@
+to do:
+
+wolfSSL threaded chat:
+chat where there is a server and n clients. Client connect to the server and the server shows a list of all connected clients.
+Every clients has an id and when a client want to send a message to another, it has to write the "id+text".
+If there isn't an id before the message, the server send it in broadcast;
+
