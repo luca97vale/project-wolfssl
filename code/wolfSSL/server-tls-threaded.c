@@ -56,18 +56,19 @@ void removeClient(int id)
 {
     /* Cleanup after this connection */
     wolfSSL_free(clients[id].ssl); /* Free the wolfSSL object              */
-    close(clients[id].connd);        /* Close the connection to the client   */
+    close(clients[id].connd);      /* Close the connection to the client   */
     clients[id].ssl = NULL;
 }
 
 void *readBuffer(void *args)
 {
-    int ret;
+    int ret, i;
     int id = *((int *)args);
     //Read the username
     XMEMSET(clients[id].buffReader, 0, sizeof(clients[id].buffReader));
     ret = wolfSSL_read(clients[id].ssl, clients[id].buffReader, sizeof(clients[id].buffReader) - 1);
     strcpy(clients[id].username, clients[id].buffReader);
+
     while (1)
     {
         /* Read the client data into our buff array */
@@ -81,16 +82,47 @@ void *readBuffer(void *args)
                 if (!strcmp(clients[id].buffReader, "quit"))
                 {
                     removeClient(id);
-                    pthread_exit(NULL); /* End theread execution                */
+                    pthread_exit(NULL); /* End threaded execution                */
                 }
-                printText(clients[id].buffReader, clients[id].username);
-                int len = XSTRLEN(clients[id].buffReader);
-                for (int i = 0; i < counter; i++)
+                else if (!strcmp(clients[id].buffReader, "list"))
                 {
-                    if (i != id)
+                    wolfSSL_write(clients[id].ssl, "Server", XSTRLEN("Server"));
+                    wolfSSL_write(clients[id].ssl, "Connected clients:", XSTRLEN("Connected clients:"));
+                    for (int j = 0; j < counter; j++)
                     {
-                        ret = wolfSSL_write(clients[i].ssl, clients[id].username, XSTRLEN(clients[id].username));
-                        ret = wolfSSL_write(clients[i].ssl, clients[id].buffReader, len);
+                        if (j != id)
+                        {
+                            char num[50];
+                            sprintf(num, "%d", j);
+                            wolfSSL_write(clients[id].ssl, num, XSTRLEN(num));
+                            wolfSSL_write(clients[id].ssl, clients[j].username, XSTRLEN(clients[j].username));
+                        }
+                    }
+                }
+                else if (clients[id].buffReader[0] == '#')
+                {
+                    int dest = clients[id].buffReader[1] - 48;      //ASCII
+                    if (dest<= counter && dest >= 0)
+                    {
+                        char str[255];
+                        strcpy(str,"private-");
+                        strcat(str,clients[id].username);
+                        ret = wolfSSL_write(clients[dest].ssl, str, XSTRLEN(str));
+                        strcpy(str,clients[id].buffReader+2);
+                        ret = wolfSSL_write(clients[dest].ssl, str, XSTRLEN(str));
+                    }
+                }
+                else
+                {
+                    printText(clients[id].buffReader, clients[id].username);
+                    int len = XSTRLEN(clients[id].buffReader);
+                    for (i = 0; i < counter; i++)
+                    {
+                        if (i != id)
+                        {
+                            ret = wolfSSL_write(clients[i].ssl, clients[id].username, XSTRLEN(clients[id].username));
+                            ret = wolfSSL_write(clients[i].ssl, clients[id].buffReader, len);
+                        }
                     }
                 }
             }
