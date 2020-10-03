@@ -28,6 +28,7 @@
 #include "minitalk.c"
 
 #define DEFAULT_PORT 11111
+#define DEFAULT_PORT_TCP 11112
 
 #define CERT_FILE "./certs/ca-cert.pem"
 
@@ -37,8 +38,10 @@ char *ip;
 WOLFSSL_CTX *ctx;
 WOLFSSL *ssl;
 int sockfd;
+int sockfdTCP;
 char buff[256];
 char buffReader[256];
+char buffReaderTCP[256];
 size_t len;
 int is_end = 0;
 char username[20];
@@ -47,6 +50,7 @@ extern char Rbuffer[256];
 pthread_t Twriter;
 //create Thread Reader
 pthread_t Treader;
+pthread_t TreaderTCP;
 
 void *writeBuffer(void *args)
 {
@@ -61,12 +65,25 @@ void *writeBuffer(void *args)
             is_end = 1;
             pthread_cancel(Treader);
         }
-        /* Send the message to the server */
-        if (wolfSSL_write(ssl, Rbuffer, len) != len)
+        else if (XSTRNCMP(Rbuffer, "list", 4) == 0 || Rbuffer[0] == '#')
         {
-            fprintf(stderr, "ERROR: failed to write\n");
-            return NULL;
+            //wolfSSL_read
+            /* Send the message to the server */
+            if (wolfSSL_write(ssl, Rbuffer, len) != len)
+            {
+                fprintf(stderr, "ERROR: failed to write\n");
+                return NULL;
+            }
         }
+        else
+        {
+            if (write(sockfdTCP, Rbuffer, len) != len)
+            {
+                fprintf(stderr, "ERROR: failed to write\n");
+                return NULL;
+            }
+        }
+
         printText(Rbuffer, username);
     }
     return NULL;
@@ -85,7 +102,7 @@ void *readBuffer(void *args)
             pthread_cancel(Twriter);
             return NULL;
         }
-        strcpy(username,buffReader);
+        strcpy(username, buffReader);
         memset(buffReader, 0, sizeof(buffReader));
         if (wolfSSL_read(ssl, buffReader, sizeof(buffReader) - 1) == -1)
         {
@@ -101,9 +118,55 @@ void *readBuffer(void *args)
     return NULL;
 }
 
+void getSenderUsername(char *buffReaderTCP, char *username)
+{
+    char *e;
+    int index;
+
+    e = strchr(buffReaderTCP, '`');
+    index = (int)(e - buffReaderTCP);
+
+    strncpy(username, buffReaderTCP, index - 1);
+}
+char *getSenderData(char *buffReaderTCP,char *output)
+{
+    char *e;
+    int index;
+
+    e = strchr(buffReaderTCP, '`');
+    index = (int)(e - buffReaderTCP);
+    strncpy(output, buffReaderTCP + index+1, strlen(buffReaderTCP) - index);
+    return output;
+}
+
+void *readBufferTCP(void *args)
+{
+    char username[50] = "";
+    char output[256] = "";
+    int ret;
+    while (!is_end)
+    {
+        memset(buffReaderTCP, 0, sizeof(buffReaderTCP));
+        memset(username, 0, sizeof(username));
+        memset(output, 0, sizeof(output));
+        ret = read(sockfdTCP, buffReaderTCP, sizeof(buffReaderTCP) - 1);
+        if (ret <= 0)
+        {
+            fprintf(stderr, "ERROR: failed to read\n");
+            pthread_cancel(TreaderTCP);
+            return NULL;
+        }
+        getSenderUsername(buffReaderTCP, username);
+        strcpy(output, getSenderData(buffReaderTCP,output));
+        printText(output, username);
+    }
+    return NULL;
+}
+
 void *client(void *args)
 {
     struct sockaddr_in servAddr;
+    struct sockaddr_in servAddrTCP;
 
     printf("Set your username: ");
     refresh();
@@ -120,6 +183,11 @@ void *client(void *args)
      * Sets the socket to be stream based (TCP),
      * 0 means choose the default protocol. */
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    {
+        fprintf(stderr, "ERROR: failed to create the socket\n");
+        return NULL;
+    }
+    if ((sockfdTCP = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
         fprintf(stderr, "ERROR: failed to create the socket\n");
         return NULL;
@@ -147,8 +215,22 @@ void *client(void *args)
     servAddr.sin_family = AF_INET;           /* using IPv4      */
     servAddr.sin_port = htons(DEFAULT_PORT); /* on DEFAULT_PORT */
 
+    /* Initialize the server address struct with zeros */
+    memset(&servAddrTCP, 0, sizeof(servAddrTCP));
+
+    /* Fill in the server address */
+    servAddrTCP.sin_family = AF_INET;               /* using IPv4      */
+    servAddrTCP.sin_port = htons(DEFAULT_PORT_TCP); /* on DEFAULT_PORT */
+
     /* Get the server IPv4 address from the command line call */
     if (inet_pton(AF_INET, ip, &servAddr.sin_addr) != 1)
+    {
+        fprintf(stderr, "ERROR: invalid address\n");
+        return NULL;
+    }
+
+    /* Get the server IPv4 address from the command line call */
+    if (inet_pton(AF_INET, ip, &servAddrTCP.sin_addr) != 1)
     {
         fprintf(stderr, "ERROR: invalid address\n");
         return NULL;
@@ -157,6 +239,14 @@ void *client(void *args)
     /* Connect to the server */
 
     if (connect(sockfd, (struct sockaddr *)&servAddr, sizeof(servAddr)) == -1)
+    {
+        printText("ERROR: failed to connect", "System");
+        return NULL;
+    }
+
+    /* Connect to the server */
+
+    if (connect(sockfdTCP, (struct sockaddr *)&servAddrTCP, sizeof(servAddrTCP)) == -1)
     {
         printText("ERROR: failed to connect", "System");
         return NULL;
@@ -196,6 +286,13 @@ void *client(void *args)
     }
 
     if (pthread_create(&Treader, NULL, readBuffer, NULL))
+    {
+        fprintf(stderr, "Error creating thread\n");
+        fflush(stdout);
+        return NULL;
+    }
+
+    if (pthread_create(&TreaderTCP, NULL, readBufferTCP, NULL))
     {
         fprintf(stderr, "Error creating thread\n");
         fflush(stdout);

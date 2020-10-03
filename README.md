@@ -12,7 +12,7 @@ sudo apt-get install libncurses5-dev libncursesw5-dev
 ```
 ## Iterative program (WolfSSL Chat)
 location: ./code/wolfSSL/iterative
-It is an iterative chat between a client a and a server.
+It is an iterative chat between a client and a server.
 
 ### Installation
 ```bash
