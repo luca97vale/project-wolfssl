@@ -127,12 +127,9 @@ void ClientHandler()
 
     while (!is_end && !client_is_end)
     {
-        writeBuffer();
-        if (!is_end && !client_is_end)
-            readBuffer();
+        if(writeBuffer() <= 0) break;
+        if (!is_end && !client_is_end && readBuffer() <=0) break;
     }
-    /* Cleanup after this connection */
-    close(connd); /* Close the connection to the client   */
 }
 
 int main()
@@ -201,41 +198,36 @@ int main()
         fprintf(stderr, "ERROR: failed to listen\n");
         return -1;
     }
-    /* Continue to accept clients until shutdown is issued */
-    while (!is_end)
+    printf("Waiting for a connection...\n");
+    /* Accept client connections */
+    if ((connd = accept(sockfd, (struct sockaddr *)&clientAddr, &size)) == -1)
     {
-        printf("Waiting for a connection...\n");
-        /* Accept client connections */
-        if ((connd = accept(sockfd, (struct sockaddr *)&clientAddr, &size)) == -1)
-        {
-            fprintf(stderr, "ERROR: failed to accept the connection\n\n");
-            return -1;
-        }
-
-        /* Create a WOLFSSL object */
-        if ((ssl = wolfSSL_new(ctx)) == NULL)
-        {
-            fprintf(stderr, "ERROR: failed to create WOLFSSL object\n");
-            return -1;
-        }
-
-        /* Attach wolfSSL to the socket */
-        wolfSSL_set_fd(ssl, connd);
-
-        /* Establish TLS connection */
-        ret = wolfSSL_accept(ssl);
-        if (ret != SSL_SUCCESS)
-        {
-            fprintf(stderr, "wolfSSL_accept error = %d\n",
-                    wolfSSL_get_error(ssl, ret));
-            return -1;
-        }
-
-        printf("Client connected successfully\n");
-        ClientHandler();
-        printText("Communication is ended!\n", "System");
-        client_is_end = 0;
+        fprintf(stderr, "ERROR: failed to accept the connection\n\n");
+        return -1;
     }
+
+    /* Create a WOLFSSL object */
+    if ((ssl = wolfSSL_new(ctx)) == NULL)
+    {
+        fprintf(stderr, "ERROR: failed to create WOLFSSL object\n");
+        return -1;
+    }
+
+    /* Attach wolfSSL to the socket */
+    wolfSSL_set_fd(ssl, connd);
+
+    /* Establish TLS connection */
+    ret = wolfSSL_accept(ssl);
+    if (ret != SSL_SUCCESS)
+    {
+        fprintf(stderr, "wolfSSL_accept error = %d\n",
+                wolfSSL_get_error(ssl, ret));
+        return -1;
+    }
+
+    printf("Client connected successfully\n");
+    ClientHandler();
+    printText("Communication is ended!\n", "System");
     ncurses_end();
     printf("Shutdown complete\n");
 

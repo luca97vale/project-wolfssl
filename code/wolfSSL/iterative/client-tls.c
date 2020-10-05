@@ -173,8 +173,8 @@ int client()
     while (!is_end)
     {
         //first read and then write
-        readBuffer();
-        if(!is_end) writeBuffer();
+        if(readBuffer() <= 0) is_end = 1;
+        if(!is_end && writeBuffer() <= 0) is_end = 1;
     }
 
     /* Cleanup and return */
