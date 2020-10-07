@@ -245,19 +245,32 @@ The operating systems supported are:
 \subsection{Client/Server provided by WolSSL}
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[scale=0.5]{test/examples/client-server/server.png}
-    \caption{Server TLS}
-    
+\begin{Verbatim}[commandchars=\\\{\}]
+______________________________________________________________
+\textcolor{green}{pi@raspberrypi}\textcolor{black}{:}\textcolor{blue}{wolfSSL/wolfssl/examples/server}\textcolor{black}{$ ./server -b}
+SSL VERSION is TLSv1.2
+SSL ciphet suite is TLS_ECDHE_RASA_WITH_AES_256_GCM_SHA384
+SSL curve name is SECP256R1
+Client message: hello wolfssl!
+______________________________________________________________
+\end{Verbatim}
+\caption{Server TLS}
 \end{figure}
 
-
-\begin{figure}[H]+
-    \centering
-    \includegraphics[scale=0.225]{test/examples/client-server/client.png}
-    \caption{Client TLS}
-    
+\begin{figure}[H]
+\begin{Verbatim}[commandchars=\\\{\}]
+______________________________________________________________
+\textcolor{green}{luca@luca}\textcolor{black}{:}\textcolor{blue}{wolfSSL/wolfssl/examples/client}\textcolor{black}{$ ./client -h }
+192.168.0.53
+SSL VERSION is TLSv1.2
+SSL ciphet suite is TLS_ECDHE_RASA_WITH_AES_256_GCM_SHA384
+SSL curve name is SECP256R1
+I hear you fa shizzle!
+______________________________________________________________
+\end{Verbatim}
+\caption{Client TLS}
 \end{figure}
+
 
 In this example, the server is a simple TLS server that allows only one client connection; after the connection with a client, the server receives an encrypted message from client, it responds and quits.
 The -b parameter allows the server to bind to any interface instead of localhost only.
@@ -577,13 +590,205 @@ wolfSSL_Cleanup();
 
 
 \subsection{TLS application}
-\subsubsection{iterative program}
-***Explanation of the iterative program developed by me; remember to describe how it work, especially say that is a 1-1 client server; client can write only if the server write before.***
-
 To develop a TLS application, I started from the TCP chat explained in the previous subsection and I added the wolfSSL function to create an encrypted communication.
-\\The goal of this program is to show how to create a simple encrypted chat, focusing on the security of an application, rather than on the good practices of the socket and thread applications.
-\\Some parts of the code like inclusion and global variables are omitted (wolfSSL object and other variables are stored in global memory); 
-\\In the next sections I'll try to explain the code of the program:
+Next programmes’ aim is to show how to create a simple encrypted chat, focusing on the security of applications, rather than on the good practices of the socket and thread applications.
+Some parts of the code like inclusion and global variables are omitted (wolfSSL object and other variables are stored in global memory); 
+In the next sections I'll try to explain the code of programs created by me:
+\subsubsection{iterative program}
+The iterative wolfSSL program is a very simple chat between two host, a client and a server; it's a ping pong chat where a client can write only if the server write first.
+
+For testing purpose, all the certificates that I use and the server private key were taken from wolfSSL download.
+\\After the initialization of the wolfSSL and the socket, the main function marks the socket referred to by sockfd as a passive socket, that is, as a socket that will be used to accept an incoming connection request using accept.
+\begin{lstlisting}[caption={int main() of iterative TLS server},captionpos=b][language=c]
+int main()
+{
+    int ret;
+
+    /* Initialize wolfSSL */
+    wolfSSL_Init();
+
+    /* Create a socket that uses an internet IPv4 address,
+     * Sets the socket to be stream based (TCP),
+     * 0 means choose the default protocol. */
+    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    {
+        fprintf(stderr, "ERROR: failed to create the socket\n");
+        return -1;
+    }
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0)
+    {
+        printf("setsockopt(SO_REUSEADDR) failed");
+        return -1;
+    }
+
+    /* Create and initialize WOLFSSL_CTX */
+
+    if ((ctx = wolfSSL_CTX_new(wolfTLSv1_2_server_method())) == NULL)
+    {
+        fprintf(stderr, "ERROR: failed to create WOLFSSL_CTX\n");
+        return -1;
+    }
+
+    /* Load server certificates into WOLFSSL_CTX */
+    if (wolfSSL_CTX_use_certificate_file(ctx, CERT_FILE, SSL_FILETYPE_PEM) != SSL_SUCCESS)
+    {
+        fprintf(stderr, "ERROR: failed to load %s, please check the file.\n",
+                CERT_FILE);
+        return -1;
+    }
+
+    /* Load server key into WOLFSSL_CTX */
+    if (wolfSSL_CTX_use_PrivateKey_file(ctx, KEY_FILE, SSL_FILETYPE_PEM) != SSL_SUCCESS)
+    {
+        fprintf(stderr, "ERROR: failed to load %s, please check the file.\n",
+                KEY_FILE);
+        return -1;
+    }
+
+    /* Initialize the server address struct with zeros */
+    memset(&servAddr, 0, sizeof(servAddr));
+
+    /* Fill in the server address */
+    servAddr.sin_family = AF_INET;           /* using IPv4      */
+    servAddr.sin_port = htons(DEFAULT_PORT); /* on DEFAULT_PORT */
+    servAddr.sin_addr.s_addr = INADDR_ANY;   /* from anywhere   */
+
+    /* Bind the server socket to our port */
+    if (bind(sockfd, (struct sockaddr *)&servAddr, sizeof(servAddr)) == -1)
+    {
+        fprintf(stderr, "ERROR: failed to bind\n");
+        return -1;
+    }
+
+    /* Listen for a new connection */
+    if (listen(sockfd, 1) == -1)
+    {
+        fprintf(stderr, "ERROR: failed to listen\n");
+        return -1;
+    }
+    printf("Waiting for a connection...\n");
+    /* Accept client connections */
+    if ((connd = accept(sockfd, (struct sockaddr *)&clientAddr, &size)) == -1)
+    {
+        fprintf(stderr, "ERROR: failed to accept the connection\n\n");
+        return -1;
+    }
+
+    /* Create a WOLFSSL object */
+    if ((ssl = wolfSSL_new(ctx)) == NULL)
+    {
+        fprintf(stderr, "ERROR: failed to create WOLFSSL object\n");
+        return -1;
+    }
+
+    /* Attach wolfSSL to the socket */
+    wolfSSL_set_fd(ssl, connd);
+
+    /* Establish TLS connection */
+    ret = wolfSSL_accept(ssl);
+    if (ret != SSL_SUCCESS)
+    {
+        fprintf(stderr, "wolfSSL_accept error = %d\n",
+                wolfSSL_get_error(ssl, ret));
+        return -1;
+    }
+
+    printf("Client connected successfully\n");
+    ClientHandler();
+    printText("Communication is ended!\n", "System");
+    ncurses_end();
+    printf("Shutdown complete\n");
+
+    /* Cleanup after this connection */
+    wolfSSL_free(ssl); /* Free the wolfSSL object              */
+    close(connd);      /* Close the connection to the client   */
+    /* Cleanup and return */
+    wolfSSL_CTX_free(ctx); /* Free the wolfSSL context object          */
+    wolfSSL_Cleanup();     /* Cleanup the wolfSSL environment          */
+    close(sockfd);         /* Close the socket listening for clients   */
+    return 0;              /* Return reporting a success               */
+}
+\end{lstlisting}
+ClientHandler function reads the username of client using the secure channel and begins the ping pong chat calling writeBuffer() and readBuffer() infinitely until one of the two hosts quit the communication.
+\begin{lstlisting}[caption={void ClientHandler() of iterative TLS server},captionpos=b][language=c]
+void ClientHandler()
+{
+    int ret;
+    /*********************** USERNAME */
+    /* Read the client username into our buff array */
+    XMEMSET(buff, 0, sizeof(buff));
+    ret = wolfSSL_read(ssl, buff, sizeof(buff) - 1);
+    ncurses_start();
+    clearWin();
+    if (ret > 0)
+    {
+        /* Print to stdout any data the client sends */
+        strcpy(username, buff);
+        char text[256];
+        sprintf(text, "Client %s connected successfully", username);
+        printText(text, "System");
+        printText("***************************\n", "System");
+        fflush(stdout);
+    }
+    else
+    {
+        printText("ERROR!!", "System");
+        close(sockfd);      /* Close the connection to the server   */
+        pthread_exit(NULL); /* End theread execution                */
+    }
+    /****************************    */
+    XMEMSET(buff, 0, sizeof(buff));
+
+    while (!is_end && !client_is_end)
+    {
+        if(writeBuffer() <= 0) break;
+        if (!is_end && !client_is_end && readBuffer() <=0) break;
+    }
+}
+\end{lstlisting}
+WriteBuffer() and readBuffer() are omitted because they only call wolfSSL\_write(...) and wolfSSL\_read(...).
+Also the client code is omitted because is very similar to the server code.
+The goal of this simple program is to check the functioning of wolfSSL library. 
+
+\begin{figure}[H]
+\begin{Verbatim}[commandchars=\\\{\}]
+
+|--------------------------\textcolor{orange}{WolfSSL chat}------------------------|
+[System] Client Luca connected successfully                           
+[System] ***************************                                        
+ 	 	                                                                                       
+[Server] Hi Luca!                                                                       
+[Luca] Hi Server!                                                                       
+[Server] Bye Bye                                                                       
+[Luca] Bye                                                                                 
+______________________________________________________________|
+\end{Verbatim}
+\caption{Server TLS}
+\end{figure}
+\begin{figure}[H]
+\begin{Verbatim}[commandchars=\\\{\}]
+
+|--------------------------\textcolor{orange}{WolfSSL chat}------------------------|                                    	 	                                                                                       
+[Server] Hi Luca!                                                                       
+[Luca] Hi Server!                                                                       
+[Server] Bye Bye                                                                       
+[Luca] Bye                                                                                 
+______________________________________________________________|
+\end{Verbatim}
+\caption{Client TLS}
+\end{figure}
+
+In order to verify the encryption of the communication, I have monitored the packet flow with wireshark.
+
+The IP address of server is \textbf{192.168.0.53}
+The IP address of client is \textbf{192.168.0.49}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{./code/img/wireshark-iterative.png}
+    \caption{Wireshark's screenshot}
+    
+\end{figure}
+***da togliere la parte che segue rimpiazzandola con il nuovo programma threaded
 \subsection{SSL Server}
 For testing purpose, all the certificates that I use and the server private key were taken from wolfSSL download.
 \\After the initialization of the wolfSSL and the socket, the main function marks the socket referred to by sockfd as a passive socket, that is, as a socket that will be used to accept incoming connection requests using accept.
@@ -1184,9 +1389,10 @@ The rest of the code is on github.
 
 For the following test I created 3 files size about 100 MB, 500 MB and 1 GB with these commands:
 \begin{lstlisting}[caption={openSSL commands},captionpos=b][language=bash]
-103.9MB = openssl rand -out sample.txt -base64 $(( 2**30 * 1/14 ))
-545.3 MB = openssl rand -out sample.txt -base64 $(( 2**29* 3/4 ))
-1 GB = openssl rand -out sample.txt -base64 $(( 2**30 * 3/4 ))
+128 MB = ./random.sh 128000000
+256 MB = ./random.sh 256
+512 MB = ./random.sh 512000000
+1 GB = ./random.sh 1000000000
 \end{lstlisting}
 
 This test is made in my gigabit home network.
@@ -1195,13 +1401,13 @@ The time is in seconds. (time also includes writing the file)
 
 \begin{tabular}{ ||c|c|c|c|c|| } 
  \hline
- \textbf{openSSL} & time1 & time2 & time3 & average \\ 
+ 128 MB & 10.48 & 10.49 & 10.69  & 10.55\\ 
  \hline
- 103.9 MB & 3.23 & 3.29 & 3.26  & 3.26\\ 
+ 256 MB & 55.03 & 55.13 & 55.46 & 55.21\\ 
  \hline
- 545.3 MB & 17.41 & 17.33 & 17.38 & 17.37 \\ 
+ 512 MB & 55.03 & 55.13 & 55.46 & 55.21\\ 
  \hline
- 1 GB & 39.66 & 36.09 & 34.01 & 36.59\\ 
+ 1 GB & 109.05 & 109.48 & 111.73& 110.09 \\ 
  \hline
 \end{tabular}
 \newline
@@ -1211,9 +1417,11 @@ The time is in seconds. (time also includes writing the file)
  \hline
  \textbf{wolfSSL} & time1 & time2 & time3 & average \\ 
  \hline
- 103.9 MB & 10.48 & 10.49 & 10.69  & 10.55\\ 
+ 128 MB & 10.48 & 10.49 & 10.69  & 10.55\\ 
  \hline
- 545.3 MB & 55.03 & 55.13 & 55.46 & 55.21\\ 
+ 256 MB & 55.03 & 55.13 & 55.46 & 55.21\\ 
+ \hline
+ 512 MB & 55.03 & 55.13 & 55.46 & 55.21\\ 
  \hline
  1 GB & 109.05 & 109.48 & 111.73& 110.09 \\ 
  \hline
