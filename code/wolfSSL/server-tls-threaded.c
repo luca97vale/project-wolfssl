@@ -184,7 +184,6 @@ void *acceptConnection(void *args)
     clearWin();
     while (1)
     {
-        //printText("Waiting for a connection...\n","System");
         /* Accept client connections */
         clients[counter].size = sizeof(clients[counter].clientAddr);
         if ((clients[counter].connd = accept(sockfd, (struct sockaddr *)&clients[counter].clientAddr, &clients[counter].size)) == -1)
