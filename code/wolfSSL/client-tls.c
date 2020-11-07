@@ -62,8 +62,14 @@ void *writeBuffer(void *args)
         len = strnlen(Rbuffer, sizeof(Rbuffer));
         if (XSTRNCMP(Rbuffer, "quit", 4) == 0)
         {
+            if (write(sockfdTCP, Rbuffer, len) != len)
+            {
+                fprintf(stderr, "ERROR: failed to write\n");
+                return NULL;
+            }
             is_end = 1;
             pthread_cancel(Treader);
+            pthread_cancel(TreaderTCP);
         }
         else if (XSTRNCMP(Rbuffer, "list", 4) == 0 || Rbuffer[0] == '#')
         {
@@ -98,7 +104,6 @@ void *readBuffer(void *args)
         memset(buffReader, 0, sizeof(buffReader));
         if (wolfSSL_read(ssl, buffReader, sizeof(buffReader) - 1) == -1)
         {
-            fprintf(stderr, "ERROR: failed to read\n");
             pthread_cancel(Twriter);
             return NULL;
         }
@@ -106,7 +111,6 @@ void *readBuffer(void *args)
         memset(buffReader, 0, sizeof(buffReader));
         if (wolfSSL_read(ssl, buffReader, sizeof(buffReader) - 1) == -1)
         {
-            fprintf(stderr, "ERROR: failed to read\n");
             pthread_cancel(Twriter);
             return NULL;
         }
@@ -152,7 +156,6 @@ void *readBufferTCP(void *args)
         ret = read(sockfdTCP, buffReaderTCP, sizeof(buffReaderTCP) - 1);
         if (ret <= 0)
         {
-            fprintf(stderr, "ERROR: failed to read\n");
             pthread_cancel(TreaderTCP);
             return NULL;
         }
@@ -300,8 +303,8 @@ void *client(void *args)
     }
 
     pthread_join(Twriter, NULL);
-    pthread_cancel(Treader);
     pthread_join(Treader, NULL);
+    pthread_join(TreaderTCP,NULL);
 
     /* Cleanup and return */
     wolfSSL_free(ssl);     /* Free the wolfSSL object                  */

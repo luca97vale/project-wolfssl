@@ -34,8 +34,8 @@
 //Global variables
 int counter = 0; //counter of connected clients
 pthread_t Taccept;
-pthread_t Treader;
-pthread_t TreaderTCP;
+pthread_t Treader[10];
+pthread_t TreaderTCP[10];
 int sockfd;
 int sockfdTCP;
 struct sockaddr_in servAddr;
@@ -58,12 +58,24 @@ struct communication
 
 struct communication clients[10];
 
-void removeClient(int id)
+void stopApplication()
 {
-    /* Cleanup after this connection */
-    wolfSSL_free(clients[id].ssl); /* Free the wolfSSL object              */
-    close(clients[id].connd);      /* Close the connection to the client   */
-    clients[id].ssl = NULL;
+
+    //delete all clients
+    int i;
+    for (i = 0; i < 10; i++)
+    {
+        if (i < counter)
+        {
+            wolfSSL_free(clients[i].ssl); /* Free the wolfSSL object              */
+            close(clients[i].connd);      /* Close the connection to the client   */
+            clients[i].ssl = NULL;
+            close(clients[i].conndTCP);
+        }
+        pthread_cancel(Treader[i]);
+        pthread_cancel(TreaderTCP[i]);
+    }
+    pthread_cancel(Taccept);
 }
 
 void *readBuffer(void *args)
@@ -85,12 +97,7 @@ void *readBuffer(void *args)
 
             if (ret > 0)
             {
-                if (!strcmp(clients[id].buffReader, "quit"))
-                {
-                    removeClient(id);
-                    pthread_exit(NULL); /* End threaded execution                */
-                }
-                else if (!strcmp(clients[id].buffReader, "list"))
+                if (!strcmp(clients[id].buffReader, "list"))
                 {
                     wolfSSL_write(clients[id].ssl, "Server", XSTRLEN("Server"));
                     wolfSSL_write(clients[id].ssl, "Connected clients:", XSTRLEN("Connected clients:"));
@@ -140,10 +147,16 @@ void *readBufferTCP(void *args)
         if (read(clients[id].conndTCP, clients[id].buffReaderTCP, sizeof(clients[id].buffReaderTCP)) <= 0)
         {
             fprintf(stderr, "ERROR: failed to read\n");
-            pthread_cancel(TreaderTCP);
+            pthread_cancel(TreaderTCP[id]);
             return NULL;
         }
         printText(clients[id].buffReaderTCP, clients[id].username);
+        if (!strcmp(clients[id].buffReaderTCP, "quit"))
+        {
+            stopApplication();
+            free(args);
+            pthread_exit(NULL); /* End threaded execution                */
+        }
         memset(output, 0, sizeof(output));
         for (int i = 0; i < counter; i++)
         {
@@ -156,7 +169,7 @@ void *readBufferTCP(void *args)
                 if (ret <= 0)
                 {
                     fprintf(stderr, "ERROR: failed to write\n");
-                    pthread_cancel(TreaderTCP);
+                    pthread_cancel(TreaderTCP[id]);
                     return NULL;
                 }
             }
@@ -213,13 +226,13 @@ void *acceptConnection(void *args)
         }
 
         *argCounter = counter;
-        if (pthread_create(&Treader, NULL, readBuffer, argCounter))
+        if (pthread_create(&Treader[counter], NULL, readBuffer, argCounter))
         {
             fprintf(stderr, "Error creating thread\n");
             fflush(stdout);
             return NULL;
         }
-        if (pthread_create(&TreaderTCP, NULL, readBufferTCP, argCounter))
+        if (pthread_create(&TreaderTCP[counter], NULL, readBufferTCP, argCounter))
         {
             fprintf(stderr, "Error creating thread\n");
             fflush(stdout);
@@ -327,6 +340,6 @@ int main()
     }
 
     pthread_join(Taccept, NULL);
-
+    ncurses_end();
     return 0;
 }
