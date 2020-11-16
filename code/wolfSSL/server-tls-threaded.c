@@ -162,8 +162,9 @@ void *readBufferTCP(void *args)
         {
             if (i != id)
             {
+                memset(output, 0, sizeof(output));
                 strcat(output, clients[id].username);
-                strcat(output, "`");
+                strcat(output, " `");
                 strcat(output, clients[id].buffReaderTCP);
                 ret = write(clients[i].conndTCP, output, XSTRLEN(output));
                 if (ret <= 0)
