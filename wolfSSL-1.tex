@@ -1362,58 +1362,107 @@ To execute a wolfSSL program you must have installed wolfSSL on your pc, and the
 In this program I used threads and ncurses so I had to add \textbf{-pthread} and \textbf{-lncurses} flags to gcc command; to optimize the compilation I created a makefile.
 
 \subsection{Execute a WolfSSL program (threaded program)}
-In my project I used a laptop for the client part, and a Raspberry Pi for the server part; they are connected to the same LAN.
+In my project I used a laptop for the client part, and a Raspberry Pi for the server part; they are connected to the same LAN (having only a pc on my home, the clients connected to the server will be on the same machine).
 In the pictures below you can see the GUI of the client and the server part, and the traffic analyze with wireshark.
-The IP address of server is \textbf{192.168.0.53} and the port is \textbf{11111}.
-The IP address of client is \textbf{192.168.0.46}\\
+The IP address of server is \textbf{192.168.0.53}; the port for the TLS socket is \textbf{11111} and the port for the TCP socket is \textbf{11112}.
+The IP address of clients is \textbf{192.168.0.46}\\ mettere anche i nomi 
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[scale=0.65]{./code/img/1-server.png}
-    \caption{Execute WolfSSL server}
-    
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{green}{pi@raspberrypi}\textcolor{black}{:}\textcolor{blue}{~/project-wolfssl/code/wolfSSL $}\textcolor{black}{./server-tls-threaded}
+\textcolor{black}{Waiting for a connection...}
+\end{Verbatim}
+\caption{Execute WolfSSL server}
 \end{figure}
 
+
 \begin{figure}[H]
-    \centering
-    \includegraphics[scale=0.248]{./code/img/1-client.png}
-    \caption{Execute WolfSSL client}
-    
+\begin{Verbatim}[commandchars=\\\{\}]
+\textcolor{green}{luca@luca}\textcolor{black}{:}\textcolor{blue}{~/project-wolfssl/code/wolfSSL$}\textcolor{black}{./client-tls
+-threaded}
+\textcolor{black}{192.168.0.53}
+\textcolor{black}{Set your username: }
+\end{Verbatim}
+\caption{Execute WolfSSL client}
 \end{figure}
 
 After the execution of the server, a client can connect to it and the ssl handshake starts.
 
-With the hello packet below, the client provides an ordered list of 27 cipher suites that it will support for encryption. The list is in the order preferred by the client, with highest preference first. This list can be modified by the programmer.
+With the hello packet below, the client provides an ordered list of 24 cipher suites that it will support for encryption. The list is in the order preferred by the client, with highest preference first. This list can be modified by the programmer.
 
 In this case, the client provides a list of optional extension which the server can use to take action or enable new features, for example:
 \begin{itemize}
-\item key\_share 
+\item signature\_algorithms
 \begin{itemize}
-\item the client sends one or more public keys using an algorithm that it thinks the server will support. This allows the rest of the handshake after the ClientHello message to be encrypted.
-\end{itemize}
-\item supported\_version
-\begin{itemize}
-\item the client indicates its support of TLS 1.3
+\item The purpose of this extension is to allow clients to indicate to the server which signature/hash algorithm pairs may be used in digital signatures.
 \end{itemize}
 \end{itemize}
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.248]{./code/img/client-hello.png}
+    \includegraphics[scale=0.500]{./code/img/client-hello.png}
     \caption{Client Hello}
-    
 \end{figure}
 
 
-In the Server Hello packet, the server has selected cipher suite 0x1301 (TLS\_AES\_128\_GCM\_SHA256) from the list of options given by the client.
-The server also sends a public key using the algorithm of the public key sent by the client. Once this is sent,the rest of the communication will be encrypted.
+In the Server Hello packet, the server has selected cipher suite 0xc030 (TLS\_ECDHE\_RSA\_WITH\_AES\_256\_GCM\_SHA384) from the list of options given by the client.
+
+Random is 32-byte random number used to generate the Master Secret.
+
+The session identifier is a unique number to identify the session for the corresponding connection with the client.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.248]{./code/img/server-hello.png}
+    \includegraphics[scale=0.500]{./code/img/server-hello.png}
     \caption{Server Hello}
     
 \end{figure}
+The server sends the client a list of certificates to authenticate itself.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.400]{./code/img/server-certificate.png}
+    \caption{Server Certificate}
+    
+\end{figure}
+The message \textbf{Server Key Exchange} is optional and sent when the public key present in the server's certificate is not suitable for key exchange, or if the cipher suite places a restriction requiring a temporary key. This key is used by the client to encrypt Client Key Exchange later in the process.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.400]{./code/img/server-key-exchange.png}
+    \caption{Server Key Exchange}
+    
+\end{figure}
+This message indicates the server is done and is awaiting the client's response.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.400]{./code/img/server-hello-done.png}
+    \caption{Server Hello Done}
+\end{figure}
+The \textbf{Client Key Exchange} message contains the protocol version of the client which the server verifies if it matches with the original client hello message. It also has the pre-master secret; it is a random number generated by the client and encrypted with the server public key. This along with the client and server random number is used to create the master secret. If the server can decrypt the message using the private key and can create the master secret locally, then the client is assured that the server has authenticated itself.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.400]{./code/img/client-key-exchange.png}
+    \caption{Client Key Exchange}
+\end{figure}
+The \textbf{Change Cipher Spec} message notifies the server that all the future messages will be encrypted using the algorithm and keys that were just negotiated.
 
+The \textbf{Encrypted Handshake} message indicates that the TLS negotiations is completed for the client.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.400]{./code/img/client-change-cipher.png}
+    \caption{Change Cipher Spec and Encrypted Handshake}
+\end{figure}
+
+The server informs the client that the messages will be encrypted with the existing algorithms and keys.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.400]{./code/img/server-change-cipher.png}
+    \caption{Change Cipher Spec}
+\end{figure}
+It is like the client finished message.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.400]{./code/img/encrypted-handshake.png}
+    \caption{Encrypted Handshake}
+\end{figure}
 
 After the SSL handshake the situation in the server GUI is:
 \begin{figure}[H]
