@@ -254,7 +254,6 @@ void *client(void *args)
         printText("ERROR: failed to connect", "System");
         return NULL;
     }
-    /*Do something*/
 
     /* Create a WOLFSSL object */
     if ((ssl = wolfSSL_new(ctx)) == NULL)
