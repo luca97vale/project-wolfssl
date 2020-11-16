@@ -60,7 +60,6 @@ struct communication clients[10];
 
 void stopApplication()
 {
-
     //delete all clients
     int i;
     for (i = 0; i < 10; i++)
@@ -72,8 +71,8 @@ void stopApplication()
             clients[i].ssl = NULL;
             close(clients[i].conndTCP);
         }
-        pthread_cancel(Treader[i]);
-        pthread_cancel(TreaderTCP[i]);
+        pthread_cancel(Treader[counter-i]);
+        pthread_cancel(TreaderTCP[counter-i]);
     }
     pthread_cancel(Taccept);
 }
