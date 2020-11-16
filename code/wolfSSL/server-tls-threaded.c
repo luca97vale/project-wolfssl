@@ -71,8 +71,8 @@ void stopApplication()
             clients[i].ssl = NULL;
             close(clients[i].conndTCP);
         }
-        pthread_cancel(Treader[counter-i]);
-        pthread_cancel(TreaderTCP[counter-i]);
+        /*pthread_cancel(Treader[counter-i]);
+        pthread_cancel(TreaderTCP[counter-i]);*/
     }
     pthread_cancel(Taccept);
 }
