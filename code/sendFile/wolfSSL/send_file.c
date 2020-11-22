@@ -116,8 +116,10 @@ int main(int argc, char *argv[])
 void sendfile(FILE *fp, WOLFSSL *ssl)
 {
     int n;
-    char sendline[MAX_LINE] = {0};
-    while ((n = fread(sendline, sizeof(char), MAX_LINE, fp)) > 0)
+    char sendline[MAX_LINE];
+    clock_t t, sum = 0;
+    t = clock();
+    while ((n = fread(sendline, sizeof(char), MAX_LINE - 1, fp)) > 0)
     {
         total += n;
         if (n != MAX_LINE && ferror(fp))
@@ -125,11 +127,16 @@ void sendfile(FILE *fp, WOLFSSL *ssl)
             perror("Read File Error");
             exit(1);
         }
-        if (wolfSSL_write(ssl, sendline, strlen(sendline)) < 0)
+        int tot;
+        t = clock();
+        if ((tot = wolfSSL_write(ssl, sendline, strlen(sendline))) < 0)
         {
             perror("Can't send file");
             exit(1);
         }
+        sum += clock() - t;
         memset(sendline, 0, MAX_LINE);
     }
+    double time_taken = ((double)sum) / CLOCKS_PER_SEC; // in seconds
+    printf("%f seconds to send data \n", time_taken);
 }
