@@ -111,20 +111,25 @@ int main(int argc, char *argv[])
 void sendfile(FILE *fp, SSL *ssl)
 {
     int n;
-    char sendline[MAX_LINE] = {0};
-    while ((n = fread(sendline, sizeof(char), MAX_LINE, fp)) > 0)
+    char sendline[MAX_LINE];
+    clock_t t, sum = 0;
+    t = clock();
+    while ((n = fread(sendline, sizeof(char), MAX_LINE - 1, fp)) > 0)
     {
-        total += n;
         if (n != MAX_LINE && ferror(fp))
         {
             perror("Read File Error");
             exit(1);
         }
-        if (SSL_write(ssl, sendline, strlen(sendline)) <= 0)
+        t = clock();
+        if ((total += SSL_write(ssl, sendline, strlen(sendline))) < 0)
         {
-            perror("Can't send file\n");
+            perror("Can't send file");
             exit(1);
         }
-        memset(sendline, 0, MAX_LINE);  
+        sum += clock() - t;
+        memset(sendline, 0, MAX_LINE);
     }
+    double time_taken = ((double)sum) / CLOCKS_PER_SEC; // in seconds
+    printf("%f seconds to send data \n", time_taken);
 }

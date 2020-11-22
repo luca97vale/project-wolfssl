@@ -120,25 +120,26 @@ void writefile(SSL *ssl, FILE *fp)
 {
     ssize_t n;
     char buff[MAX_LINE] = {0};
-    clock_t t; 
-    t = clock(); 
+    clock_t t,sum = 0;
+    t = clock();
     while ((n = SSL_read(ssl, buff, sizeof(buff))) > 0)
     {
+        sum += clock() - t;
         total += n;
         if (n == -1)
         {
             perror("Receive File Error");
             exit(1);
         }
-
         if (fwrite(buff, sizeof(char), n, fp) != n)
         {
             perror("Write File Error");
             exit(1);
         }
         memset(buff, 0, MAX_LINE);
+        t = clock();
     }
-    t = clock() - t; 
-    double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds 
-    printf("%f seconds to receive data \n", time_taken); 
+    //t = clock() - t;
+    double time_taken = ((double)sum) / CLOCKS_PER_SEC; // in seconds
+    printf("%f seconds to receive data \n", time_taken);
 }
