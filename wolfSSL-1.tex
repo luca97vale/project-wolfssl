@@ -1723,6 +1723,21 @@ The run-time memory occupation of the receive program (writefile function) is:
 With valgrind openSSL has the total heap usage: 23,947 allocs, 23,947 frees, 6,937,196 bytes allocated and wolfSSL the total heap usage: 104 allocs, 104 frees, 121,036 bytes allocated.
 
 Even in a small program the difference is relevant.
+
+\subsection{Segment size comparison}
+In order to compare the segment size between wolfSSL and openSSL, I used the previous send file program. To see the segment size I sent several files with openSSL and wolfSSL and I monitored the traffic data with Wireshark. Sending several files, I noticed that the segment size is always the same, either if I used openSSL or wolfSSL.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.47]{./code/img/application_data_wolfSSL.png}
+    \caption{Application data wolfSSL}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.47]{./code/img/application_data_openSSL.png}
+    \caption{Application data openSSL}
+\end{figure}
+
+
 \section{Conclusion}
 WolfSSL is a beautiful very well done library. They have a forum where thousand of users report their problems and solutions, in which employees too are very active.
 
