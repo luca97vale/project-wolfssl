@@ -69,84 +69,6 @@ This document was intended as a small introductory guide to wolfssl.
 
 
 \pagenumbering{arabic}
-\section{SSL Protocol}
-
-\subsection{Introduction}
-The SSL protool is a client/server protocol that provides the following basic security services to the communicating peers:
-\begin{itemize}
-	\item Authentication (both peer entity anda data origin authentication) services
-	\item Connection confidentiality services
-	\item Connection integrity services
-\end{itemize}
-
-The SSL protocol is sockets-oriented, meaning that all or none of the data that is sent to or received from a network connection is cryptographically protected in exactly the same way. It can be best viewed as an intermediate layer between the transport and the application layer that serves two purposes:
-\begin{itemize}
-	\item Establish a secure connection between the commucating peers
-	\item Use this connection to securely trasmit giher-layer protocol data from the sender to the reciever. It therefore fragments the data in pieces called fragments; each fragment is optionally compressed, authenticated, encrypted, prepended with a header, and transmitted to the reciever. Each data fragment prepared this way is sent in a distinct SSL record.
-\end{itemize}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[scale=0.5]{subLayer_subProtocols.png}
-    \caption{The SSL with its (sub)layer and (sub)protocols}
-    
-\end{figure}
-
-The SSL consists of two sublayers and a few subprotocols:
-\begin{itemize}
-	\item The lower sublayer is stacked on top of some connection-oriented and reliable transport layer protocol. This layer basically comprises the SSL record protocol that is used for the encapsulation of the higher-layer protocol data.
-	\item The higher sublayer is stacked on top of the SSL record protocol and comprises four subprotocols.
-
-	\begin{itemize}
-		\item The \emph{SSL handshake protocol} is the core subprotocol of SSL. It is used for establishment of a secure connection. It allows the communicating peers to authenticate each other and to negotiate a cipher suite and a compression method.
-		\item The \emph{SSL change cipher spec protocol} is used to put the parameters, set by the SSL handshake protocol in place and make them effective.
-		\item The \emph{SSL alert protocol} allows the communicating peers to signal indicators of potential problems and send respective alert messages to each other.
-		\item The \emph{SSL application data protocol} is used for the secure transmission of application data.
-	\end{itemize}
-
-\end{itemize}
-
-In spite of the fact that SSL consists of several subprotocols, we use the term \emph{SSL protocol} to refer to all of them simultaneously.
-
-\subsection{SSL Handshake}
-The SSL handshake protocol is layered on top of the SSL record protocol. It allows a client and server to authenticate each other and to negotiate issues like cipher suites and compression methods.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[scale=0.7]{handshake.png}
-    \caption{The SSL handshake protocol}
-    
-\end{figure}
-
-\vspace{5mm} %5mm vertical space
-The SSL handshake protocol comprises four sets of messages:
-\begin{itemize}
-\item The first flight comprises a single \emph{ClientHello} message that is sent from the client to the server.
-\item The second flight comprises two messages that are sent back from the server to the client:
-\begin{enumerate}
-\item \emph{ServerHello} message is sent in response to the \emph{ClientHello} message
-\item (optional) If the server is to authenticate itself, it may send a \emph{Certificate} message to the client.
-\item (optional) Under some circumstances, the server may send a \emph{ServerKeyExchange} message to the client.
-\item (optional) If the server requires the client to authenticate itself with a public key certificate, then it may send a \emph{CertificateRequest} message to the client.
-\item Finally, server send a \emph{ServerHelloDone} message to the client.
-\end{enumerate}
-\item The third flight comprises three to five messages that are again sent from the client to the server:
-\begin{enumerate}
-\item (optional) If the server has sent a \emph{CertificateRequest} message, then the client sends a \emph{Certificate} message to the server.
-\item In the main step of the protocol, the client sends a \emph{ClientKeyExchange} message to the server.
-\item (optional) If the client has sent a certificate to the server, then it must also send a \emph{CertificateVerify} message to the server. This message is digitally signed with the private key that corresponds to the client certificate's public key.
-\item The client sends a \emph{ChangeCipherSpec} message to the server (using the SSL change cipher spec protocol) and copies its pending write state into the current write state.
-\item The client sends a \emph{Finished} message to the server. As mentioned above, this is the first message that is cryptographically protected under the new cipher spec.
-\end{enumerate}
-\item The fourth flight comprises two messages that are sent from the server back to the client:
-\begin{enumerate}
-\item The server sends another \emph{ChangeCipherSpec} message to the client and copies its pending write state into the current write state.
-\item Finally, the server send a \emph{Finished} message to the client. Again, this message is cryptographically protected under the new cipher spec.
-
-\end{enumerate}
-\end{itemize}
-
-At this point in time, the SSL handshake is complete and the client and server may start exchanging application-layer data.
 
 \section{WolfSSL}
 \subsection{Introduction}
@@ -579,7 +501,7 @@ Instead the \textbf{write(...)} function is replaced by:
 \begin{lstlisting}[language=c]
 int wolfSSL_write(WOLFSSL *ssl, void *data, int sz);
 \end{lstlisting}
-It writes \textbf{sz} bytes from the buffer, \textbf{data}, to the SSL connection, \textbf{ssl}.
+It writes \textbf{sz} bytes from the buffer, \textbf{data}, to the TLS connection, \textbf{ssl}.
 
 When the application is over, the WOLFSSL\_CTX object and the wolfSSL library must be freed; the instructions are:
 \begin{lstlisting}[language=c]
@@ -1451,65 +1373,101 @@ The \textbf{Encrypted Handshake} message indicates that the TLS negotiations is 
     \caption{Change Cipher Spec and Encrypted Handshake}
 \end{figure}
 
-The server informs the client that the messages will be encrypted with the existing algorithms and keys.
+\textbf{(Change Cipher Spec)}The server informs the client that the messages will be encrypted with the existing algorithms and keys.
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.400]{./code/img/server-change-cipher.png}
     \caption{Change Cipher Spec}
 \end{figure}
-It is like the client finished message.
+\textbf{(Encrypted Handshake Message)}Server informs the client the end of the TLS negotiations. It is like the client finished message.
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.400]{./code/img/encrypted-handshake.png}
     \caption{Encrypted Handshake}
 \end{figure}
-
-After the SSL handshake the situation in the server GUI is:
+Every client will do the same handshake described above.
+After all clients' SSL handshake the situation in the server GUI is:
 \begin{figure}[H]
-    \centering
-    \includegraphics[scale=0.6]{./code/img/2-server.png}
-    \caption{Client connected, server GUI}
-    
+\begin{Verbatim}[commandchars=\\\{\}]
+
+|--------------------------\textcolor{orange}{WolfSSL chat}------------------------|
+[System] Client Luca connected successfully                           
+[System] ***************************                                        
+[System] Client Maria connected successfully                           
+[System] ***************************                                          
+[System] Client Carlos connected successfully                           
+[System] ***************************                                                                      
+______________________________________________________________|
+\end{Verbatim}
+\caption{Connected clients, server GUI}
 \end{figure}
 
 
 
-To test the exact function of the programs, I sent several messages between the laptop and the raspberry:
+To test the exact function of the programs, I sent several messages.
 \begin{figure}[H]
-    \centering
-    \includegraphics[scale=0.20]{./code/img/2-client.png}
-    \caption{Exchange messages. Client side}
-    
-\end{figure}
-\begin{figure}[H]
-    \centering
-    \includegraphics[scale=0.44]{./code/img/3-server.png}
-    \caption{Exchange messages. Server side}
-    
+\begin{Verbatim}[commandchars=\\\{\}]
+
+|--------------------------\textcolor{orange}{WolfSSL chat}------------------------|
+[Luca] Hi                          
+[Maria] Hi Luca!
+[Carlos] Hi everyone!
+[Luca] This message is public
+[Luca] list
+[Server] Connected clients:
+[1] Maria
+[2] Carlos
+[Luca] #1 this message is only for you, Maria!
+[private-Maria] Thank you Luca
+______________________________________________________________|
+\end{Verbatim}
+\caption{Client Luca, GUI}
 \end{figure}
 
-
-As you can see, the messages are encrypted.
 \begin{figure}[H]
-    \centering
-    \includegraphics[scale=0.248]{./code/img/application_data.png}
-    \caption{Application data}
-    
+\begin{Verbatim}[commandchars=\\\{\}]
+|--------------------------\textcolor{orange}{WolfSSL chat}------------------------|
+[Luca] Hi                          
+[Maria] Hi Luca!
+[Carlos] Hi everyone!
+[Luca] This message is public
+[private-Luca] this message is only for you, Maria!
+[Maria] list
+[Server] Connected clients:
+[0] Luca
+[2] Carlos
+[Maria] #0 Thank you Luca
+[private-Maria] Thank you Luca
+______________________________________________________________|
+\end{Verbatim}
+\caption{Client Maria, GUI}
 \end{figure}
 
-These are the end of communication screens from the client and from the server:
+\begin{figure}[H]
+\begin{Verbatim}[commandchars=\\\{\}]
+|--------------------------\textcolor{orange}{WolfSSL chat}------------------------|
+[Luca] Hi                          
+[Maria] Hi Luca!
+[Carlos] Hi everyone!
+[Luca] This message is public
+______________________________________________________________|
+\end{Verbatim}
+\caption{Client Carlos, GUI}
+\end{figure}
+
+With Wireshark you can see the difference between the TCP and TLS packets:
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.2]{./code/img/3-client.png}
-    \caption{Execute WolfSSL client}
-    
+    \includegraphics[scale=0.3]{./code/img/tcp-traffic.png}
+    \caption{TCP traffic}
 \end{figure}
+In the TLS capture, after the handshake for each client, the messages are encrypted.
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.45]{./code/img/4-server.png}
-    \caption{Execute WolfSSL client}
-    
+    \includegraphics[scale=0.3]{./code/img/tls-traffic.png}
+    \caption{TLS traffic}
 \end{figure}
+
 
 \section{Differences between WolfSSL and OpenSSL}
 \subsection{Differences}
@@ -1531,7 +1489,7 @@ The main differences are:
 \end{itemize}
 
 \subsection{Build size and speed test}
-I installed openSSL and wolfSSL in a Raspberry Pi 4 and I could see the difference in occupancy on disk:
+I installed openSSL (version: 3.0.0-alpha7-dev) and wolfSSL in a Raspberry Pi 4 and I could see the difference in occupancy on disk:
 OpenSSL occupies 412.5 MB while wolfSSL only 47 MB. This difference also affects the compilation and installation time; WolfSSL is compiled and installed in about 3 minutes while openSSL takes at least 10 minutes.
 
 Wolfssl is definitely made for embedded systems, but how much can the data forwarding performance differ?
@@ -1548,46 +1506,105 @@ openssl x509 -req -days 365 -in signingReq.csr -CA CA-cert.pem -CAkey CA-key.pem
 
 I created these programs to measure the data forwarding time.
 
-The functions under examination are:
+The functions under examination are writefile (receive data from the secure channel) and sendfile (send data through the secure channel):
 
-\begin{lstlisting}[caption={openSSL function},captionpos=b][language=c]
+\begin{lstlisting}[caption={sendfile openSSL function},captionpos=b][language=c]
+void sendfile(FILE *fp, SSL *ssl)
+{
+    int n;
+    char sendline[MAX_LINE];
+    clock_t t, sum = 0;
+    t = clock();
+    while ((n = fread(sendline, sizeof(char), MAX_LINE - 1, fp)) > 0)
+    {
+        if (n != MAX_LINE && ferror(fp))
+        {
+            perror("Read File Error");
+            exit(1);
+        }
+        t = clock();
+        if ((total += SSL_write(ssl, sendline, strlen(sendline))) < 0)
+        {
+            perror("Can't send file");
+            exit(1);
+        }
+        sum += clock() - t;
+        memset(sendline, 0, MAX_LINE);
+    }
+    double time_taken = ((double)sum) / CLOCKS_PER_SEC; // in seconds
+    printf("%f seconds to send data \n", time_taken);
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={writefile openSSL function},captionpos=b][language=c]
 void writefile(SSL *ssl, FILE *fp)
 {
     ssize_t n;
     char buff[MAX_LINE] = {0};
-    clock_t t; 
-    t = clock(); 
+    clock_t t,sum = 0;
+    t = clock();
     while ((n = SSL_read(ssl, buff, sizeof(buff))) > 0)
     {
+        sum += clock() - t;
         total += n;
         if (n == -1)
         {
             perror("Receive File Error");
             exit(1);
         }
-
         if (fwrite(buff, sizeof(char), n, fp) != n)
         {
             perror("Write File Error");
             exit(1);
         }
         memset(buff, 0, MAX_LINE);
+        t = clock();
     }
-    t = clock() - t; 
-    double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds 
-    printf("%f seconds to receive data \n", time_taken); 
+    double time_taken = ((double)sum) / CLOCKS_PER_SEC; // in seconds
+    printf("%f seconds to receive data \n", time_taken);
 }
+
 \end{lstlisting}
 
-\begin{lstlisting}[caption={wolfSSL function},captionpos=b][language=c]
+\begin{lstlisting}[caption={sendfile wolfSSL function},captionpos=b][language=c]
+void sendfile(FILE *fp, WOLFSSL *ssl)
+{
+    int n;
+    char sendline[MAX_LINE];
+    clock_t t, sum = 0;
+    t = clock();
+    while ((n = fread(sendline, sizeof(char), MAX_LINE - 1, fp)) > 0)
+    {
+        if (n != MAX_LINE && ferror(fp))
+        {
+            perror("Read File Error");
+            exit(1);
+        }
+        t = clock();
+        if ((total += wolfSSL_write(ssl, sendline, strlen(sendline))) < 0)
+        {
+            perror("Can't send file");
+            exit(1);
+        }
+        sum += clock() - t;
+        memset(sendline, 0, MAX_LINE);
+    }
+    double time_taken = ((double)sum) / CLOCKS_PER_SEC; // in seconds
+    printf("%f seconds to send data \n", time_taken);
+}
+
+\end{lstlisting}
+
+\begin{lstlisting}[caption={writefile wolfSSL function},captionpos=b][language=c]
 void writefile(WOLFSSL *ssl, FILE *fp)
 {
     ssize_t n;
     char buff[MAX_LINE] = {0};
-    clock_t t;
+    clock_t t,sum = 0;
     t = clock();
     while ((n = wolfSSL_read(ssl, buff, sizeof(buff))) > 0)
     {
+        sum += clock() - t;
         total += n;
         if (n == -1)
         {
@@ -1600,58 +1617,112 @@ void writefile(WOLFSSL *ssl, FILE *fp)
             exit(1);
         }
         memset(buff, 0, MAX_LINE);
+        t = clock();
     }
-    t = clock() - t;
-    double time_taken = ((double)t) / CLOCKS_PER_SEC; // in seconds
+    double time_taken = ((double)sum) / CLOCKS_PER_SEC; // in seconds
     printf("%f seconds to receive data \n", time_taken);
 }
 \end{lstlisting}
 The rest of the code is on github.
 
-For the following test I created 3 files size about 100 MB, 500 MB and 1 GB with these commands:
+For the following test I created 4 files size about 128 MB, 256 MB, 512 MB and 1 GB with these commands:
 \begin{lstlisting}[caption={openSSL commands},captionpos=b][language=bash]
 128 MB = ./random.sh 128000000
-256 MB = ./random.sh 256
+256 MB = ./random.sh 256000000
 512 MB = ./random.sh 512000000
 1 GB = ./random.sh 1000000000
 \end{lstlisting}
 
 This test is made in my gigabit home network.
-The time is in seconds. (time also includes writing the file)
+The time is in seconds.
 \\The cipher suite used is: TLS\_ECDHE\_RSA\_WITH\_AES\_256\_GCM\_SHA384
 
+Send file:\\
 \begin{tabular}{ ||c|c|c|c|c|| } 
  \hline
- 128 MB & 10.48 & 10.49 & 10.69  & 10.55\\ 
+ \textbf{openSSL} & time1 & time2 & time3 & average \\ 
  \hline
- 256 MB & 55.03 & 55.13 & 55.46 & 55.21\\ 
+ 128 MB & 0.18& 0.25& 0.21& 0.21\\ 
  \hline
- 512 MB & 55.03 & 55.13 & 55.46 & 55.21\\ 
+ 256 MB & 0.56& 0.42& 0.45& 0.48\\ 
  \hline
- 1 GB & 109.05 & 109.48 & 111.73& 110.09 \\ 
+ 512 MB & 1.13& 1.06& 0.77& 0.99\\ 
+ \hline
+ 1 GB  & 1.74& 1.69& 1.53& 1.65\\ 
  \hline
 \end{tabular}
 \newline
-\newline
-
 \begin{tabular}{ ||c|c|c|c|c|| } 
  \hline
  \textbf{wolfSSL} & time1 & time2 & time3 & average \\ 
  \hline
- 128 MB & 10.48 & 10.49 & 10.69  & 10.55\\ 
+128 MB & 5.40& 5.36& 4.64& 5.13\\ 
  \hline
- 256 MB & 55.03 & 55.13 & 55.46 & 55.21\\ 
+ 256 MB & 10.59& 8.69& 8.89& 9.39\\ 
  \hline
- 512 MB & 55.03 & 55.13 & 55.46 & 55.21\\ 
+ 512 MB & 20.73& 20.88& 22.16& 21.26\\ 
  \hline
- 1 GB & 109.05 & 109.48 & 111.73& 110.09 \\ 
+ 1 GB  & 40.94& 36.84& 35.58& 37.79\\ 
+ \hline
+\end{tabular}
+\newline
+
+Receive file:\\
+\begin{tabular}{ ||c|c|c|c|c|| } 
+ \hline
+ \textbf{openSSL} & time1 & time2 & time3 & average \\ 
+ \hline
+ 128 MB & 3.61& 3.89& 3.59& 3.70\\ 
+ \hline
+ 256 MB & 7.08& 7.30& 7.24& 7.21\\ 
+ \hline
+ 512 MB & 15.73& 16.65& 14.56& 15.65\\ 
+ \hline
+ 1 GB  & 29.86& 29.26& 28.42& 29.18\\ 
+ \hline
+\end{tabular}
+\newline
+\begin{tabular}{ ||c|c|c|c|c|| } 
+ \hline
+ \textbf{wolfSSL} & time1 & time2 & time3 & average \\ 
+ \hline
+128 MB & 12.53& 13.33& 13.83& 13.23\\ 
+ \hline
+ 256 MB & 25.09& 25.02& 25.05& 25.05\\ 
+ \hline
+ 512 MB & 51.15& 50.83& 53.30& 51.76\\ 
+ \hline
+ 1 GB  & 97.85& 97.78& 98.62& 98.08\\ 
  \hline
 \end{tabular}
 \newline
 
 OpenSSL is more performing than wolfssl; the difference of time is relevant.
-Only by sending large amounts of data you can see the difference between them, but wolfSSL being born for embedded systems works very well and above all it takes up less space.
+Sending large amounts of data you can see the difference between them, but wolfSSL being born for embedded systems works very well and above all it takes up less space.
 
+\subsection{Run-time memory occupation}
+To compare the run-time memory occupation between openSSL and wolfSSL I used the linux task manager and valgrind. Using the task manager, the values aren't the exactly run-time memory occupation in a precise moment but the memory reserved by the operating system for the process; this allows me to do an estimation and a comparison among them.
+
+In this comparison I monitored the RSS and the VSZ:
+the RSS is the Resident Set Size and is used to show how much memory is allocated to that process and is in RAM. It does not include memory that is swapped out. It does include memory from shared libraries as long as the pages from those libraries are actually in memory. It does include all stack and heap memory.
+The VSZ is the Virtual Memory Size. It includes all memory that the process can access, including memory that is swapped out, memory that is allocated, but not used, and memory that is from shared libraries.
+
+The run-time memory occupation of the receive program (writefile function) is:
+\\
+\begin{tabular}{ ||c|c|c|c|c|| } 
+ \hline
+ & RSS & VSZ\\ 
+ \hline
+ \textbf{wolfSSL} &1.3 MB& 12.6MB\\ 
+ \hline
+ \textbf{openSSL} &5.9 MB& 18.2MB\\ 
+ \hline
+\end{tabular}
+\newline
+\newline
+With valgrind openSSL has the total heap usage: 23,947 allocs, 23,947 frees, 6,937,196 bytes allocated and wolfSSL the total heap usage: 104 allocs, 104 frees, 121,036 bytes allocated.
+
+Even in a small program the difference is relevant.
 \section{Conclusion}
 WolfSSL is a beautiful very well done library. They have a forum where thousand of users report their problems and solutions, in which employees too are very active.
 

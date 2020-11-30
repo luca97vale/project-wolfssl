@@ -129,7 +129,7 @@ void sendfile(FILE *fp, WOLFSSL *ssl)
         }
         int tot;
         t = clock();
-        if ((tot = wolfSSL_write(ssl, sendline, strlen(sendline))) < 0)
+        if ((tot = wolfSSL_write(ssl, sendline, n)) < 0)
         {
             perror("Can't send file");
             exit(1);

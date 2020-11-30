@@ -122,7 +122,7 @@ void sendfile(FILE *fp, SSL *ssl)
             exit(1);
         }
         t = clock();
-        if ((total += SSL_write(ssl, sendline, strlen(sendline))) < 0)
+        if ((total += SSL_write(ssl, sendline, n)) < 0)
         {
             perror("Can't send file");
             exit(1);
