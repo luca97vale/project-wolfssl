@@ -63,12 +63,22 @@
 \newpage
 \begin{abstract}
 This document was intended as a small introductory guide to wolfssl.
-\\For the creation of this thesis I used the official wolfssl manual and some github repository related to wolfssl.
+For the creation of this thesis I used the official wolfssl manual and some github repository related to wolfssl.
 \end{abstract}
 \newpage
 
 
 \pagenumbering{arabic}
+
+\section{Communication Security In Embedded Systems}
+\textit{An embedded system can be defined as an autonomous electronic and information system} \cite{BookEmbeddedSystems}.
+An embedded system is not really a personal computer (PC), but may resemble an industrial PC.  We can see that a standard PC can execute all types of applications as it is designed for general purposes, while an embedded system can only execute a single dedicated application
+An important property of an embedded system is its ability to communicate with the outside world. The processors used in an embedded system integrate an Ethernet network interface as standard. It is also possible to integrate a wired or wireless internet connection simply by the addition of a small electronic module. Today, controlling an embedded system from a distance has become a reality, and it is completely possible to control an embedded system over the internet via a web browser. This is possible thanks to the power offered by processors designed for embedded systems, and also to the explosion in internet connectivity and the way in which this has become a part of everyday life. IP connectivity basically allows us to control an embedded system remotely over the internet.
+
+Nevertheless, an important problem emerges: communications security in embedded systems in the current situation.
+With the growing number of embedded applications (aircraft or factory control, transactions, video, etc.), various embedded systems have to communicate with each other over non-secure channels, such as the internet, via wireless connections. There is therefore an enormous risk if data, commands, or sensitive updates are transmitted insecurely over the internet. In order to withstand malicious attacks, the data exchanged must be secured from one end of the transmission to the other. Today many protocols for securing communications (SSH, SSL/TLS, DTLS, IPsec, etc.) are available, and security can be implemented at various levels of the communication stack. However, the greatest obstacles to their use in embedded systems are the limited memory and low processing capacity provided by the platforms of these devices.
+
+Cryptographic algorithms with their many calculations and their significant demands on memory have always presented a barrier to the addition of security to communications among embedded systems. Today, these barriers have become less and less important thanks to the adaptation of security protocols for embedded systems and the use of hardware acceleration techniques, which provide low power processors with the capacity to rapidly execute cryptographic algorithms.
 
 \section{WolfSSL}
 \subsection{Introduction}
@@ -1489,7 +1499,7 @@ The main differences are:
 \end{itemize}
 
 \subsection{Build size and speed test}
-I installed openSSL (version: 3.0.0-alpha7-dev) and wolfSSL in a Raspberry Pi 4 and I could see the difference in occupancy on disk:
+I installed openSSL (version: 3.0.0-alpha7-dev) and wolfSSL (version: 4.5.0) in a Raspberry Pi 4 and I could see the difference in occupancy on disk:
 OpenSSL occupies 412.5 MB while wolfSSL only 47 MB. This difference also affects the compilation and installation time; WolfSSL is compiled and installed in about 3 minutes while openSSL takes at least 10 minutes.
 
 Wolfssl is definitely made for embedded systems, but how much can the data forwarding performance differ?
@@ -1752,7 +1762,6 @@ It is actively being used in a wide range of markets and products including the 
 In the future I intend to carry on this research, also focusing on wolfSSL's other products, such as wolfSSH, wolfCrypt, etc.
 
 
-
 \begin{thebibliography}{9}
 
 \bibitem{WolfSSLRepo} 
@@ -1763,10 +1772,16 @@ Official WolfSSL repository
 Official WolfSSL manual
 
 \bibitem{Book}
-William Stallings. \textit{ Cryptography and Network Security Principles and Practice, Global Edition-Pearson (2017)}
+William Stallings, ''Cryptography and Network Security Principles and Practice, Global Edition-Pearson (2017)'',
+ISBN: 978-1292158587
 
 \bibitem{Book}
-Rolf Oppliger. \textit{SSL and TLS: Theory and Practice}
+Rolf Oppliger, ''SSL and TLS: Theory and Practice'',
+ISBN: 978-1596934474
+\bibitem{BookEmbeddedSystems}
+Wiley, ''Communicating Embedded Systems: Networks Applications'',
+ISBN: 978-1848211445
+
 \end{thebibliography}
 
 
