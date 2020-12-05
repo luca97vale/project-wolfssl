@@ -1,5 +1,4 @@
 \documentclass[a4paper,12pt]{article}
-\usepackage[utf8]{inputenc}
 \usepackage{imakeidx}
 \usepackage{graphicx}
 \usepackage{float} %required for the placement specifier H
@@ -11,13 +10,18 @@
 \usepackage{fancyvrb}
 
 \usepackage{color}
+\usepackage[a4paper,colorlinks=true,urlcolor=blue,citecolor=blue,linkcolor=blue,bookmarks=false]{hyperref}
+\usepackage{xspace}
+% Definition of margins
+%
+\usepackage[top=2cm,bottom=2cm,left=2cm,right=2cm]{geometry}
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
 \definecolor{mauve}{rgb}{0.58,0,0.82}
 
 \lstset{frame=tb,
-  language=Java,
+  language=c,
   aboveskip=3mm,
   belowskip=3mm,
   showstringspaces=false,
@@ -34,6 +38,7 @@
 }
 
 \usepackage[english]{babel}
+\usepackage[latin1]{inputenc}% IMPORTANT! use ISO-8859-1 encoding
 \usepackage{xcolor}
 \usepackage{adjustbox}
 \usepackage{verbatim}
@@ -41,7 +46,10 @@
 
 \makeindex[columns=3]
 
-\pagenumbering{roman}
+
+
+\setlength\parskip{\medskipamount}
+\setlength\parindent{0pt}
 
 \begin{document}
 
@@ -53,11 +61,17 @@
 \author{Luca Valentini (278487)
 \\
 }
-\date{september 2020}
-
-
+\date{december 2020}
 \maketitle
+\vfill
+
+\rule{\textwidth}{1pt}
+
 \tableofcontents
+
+\rule{\textwidth}{1pt}
+
+\vfill
 
 
 \newpage
@@ -67,8 +81,6 @@ For the creation of this thesis I used the official wolfssl manual and some gith
 \end{abstract}
 \newpage
 
-
-\pagenumbering{arabic}
 
 \section{Communication Security In Embedded Systems}
 \textit{An embedded system can be defined as an autonomous electronic and information system} \cite{BookEmbeddedSystems}.
@@ -1499,8 +1511,15 @@ The main differences are:
 \end{itemize}
 
 \subsection{Build size and speed test}
-I installed openSSL (version: 3.0.0-alpha7-dev) and wolfSSL (version: 4.5.0) in a Raspberry Pi 4 and I could see the difference in occupancy on disk:
+I downloaded openSSL (version: 3.0.0-alpha7-dev) and wolfSSL (version: 4.5.0) in a Raspberry Pi 4 and I noticed the difference in terms of space occupied.
 OpenSSL occupies 412.5 MB while wolfSSL only 47 MB. This difference also affects the compilation and installation time; WolfSSL is compiled and installed in about 3 minutes while openSSL takes at least 10 minutes.
+The wolfSSL and openSSL libraries are installed in /usr/local/lib directory and occupied respectively 0.37 MB and 11 MB.
+WolfSSL provides 263 possibilities circa of custom installation; these flags allow the user to choose the enabling or disabling wolfSSL features. Different features can reduce or increase the space occupancy on the disk, for example, enabling all wolfSSL features the library is 1.2 MB.
+To reduce the size of wolfSSL library I tried to configure it by disabling some cipher algorithms and other wolfSSL features with these flags:
+
+\textit{--disable-aes --disable-aescbc --disable-aesgcm --disable-asm --enable-chacha --disable-crypttests --disable-des3 --enable-dh --disable-ecc --disable-eccshamir --disable-errorstrings --disable-examples --disable-inline --disable-md5 --disable-memory --disable-oldnames --disable-oldtls --enable-poly1305 --disable-sha224 --disable-sha512 --disable-base64encode --disable-extended-master --disable-harden --disable-jobserver}
+
+This configuration produces a wolfSSL library that occupies 0.26 MB on disk.
 
 Wolfssl is definitely made for embedded systems, but how much can the data forwarding performance differ?
 \\To answer this question I created two program that exchange data between a Raspberry and a laptop, one for wolfSSL and one for openSSL. In the specification, one of the two reads a file and sends the read content to the other one.
@@ -1761,15 +1780,15 @@ It is actively being used in a wide range of markets and products including the 
 %\vspace{5mm} %5mm vertical space
 In the future I intend to carry on this research, also focusing on wolfSSL's other products, such as wolfSSH, wolfCrypt, etc.
 
-
 \begin{thebibliography}{9}
 
 \bibitem{WolfSSLRepo} 
 Official WolfSSL repository
-\\\texttt{https://github.com/wolfSSL/wolfssl}
+\\\url{https://www.github.com/wolfSSL/wolfssl}
 
 \bibitem{WolfSSLmanual} 
 Official WolfSSL manual
+\\\url{https://www.wolfssl.com}
 
 \bibitem{Book}
 William Stallings, ''Cryptography and Network Security Principles and Practice, Global Edition-Pearson (2017)'',
@@ -1783,6 +1802,7 @@ Wiley, ''Communicating Embedded Systems: Networks Applications'',
 ISBN: 978-1848211445
 
 \end{thebibliography}
+
 
 
 \end{document}
