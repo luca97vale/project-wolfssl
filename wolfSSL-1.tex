@@ -539,10 +539,9 @@ Next programmes' aim is to show how to create a simple encrypted chat, focusing 
 Some parts of the code like inclusion and global variables are omitted (wolfSSL object and other variables are stored in global memory); 
 \subsubsection{Iterative program}
 In the next sections I'll try to explain the code of programs created by me:
-The iterative wolfSSL program is a very simple chat between two host, a client and a server; it's a ping pong chat where a client can write only if the server write first.
-
+the iterative wolfSSL program is a very simple chat between two host, a client and a server; it's a ping pong chat where a client can write only if the server write first.
 For testing purpose, all the certificates that I use and the server private key were taken from wolfSSL download.
-\\After the initialization of the wolfSSL and the socket, the main function marks the socket referred to by sockfd as a passive socket, that is, as a socket that will be used to accept an incoming connection request using accept.
+After the initialization of the wolfSSL and the socket, the main function marks the socket referred to by sockfd as a passive socket, that is, as a socket that will be used to accept an incoming connection request using accept.
 \begin{lstlisting}[caption={int main() of iterative TLS server},captionpos=b][language=c]
 int main()
 {
@@ -653,7 +652,7 @@ int main()
     return 0;              /* Return reporting a success               */
 }
 \end{lstlisting}
-ClientHandler function reads the username of client using the secure channel and begins the ping pong chat calling writeBuffer() and readBuffer() infinitely until one of the two hosts quit the communication.
+ClientHandler function reads the username of the client and it begins the ping pong chat calling writeBuffer() and readBuffer() infinitely, until one of the two hosts quits the communication.
 \begin{lstlisting}[caption={void ClientHandler() of iterative TLS server},captionpos=b][language=c]
 void ClientHandler()
 {
@@ -724,7 +723,7 @@ ______________________________________________________________|
 
 In order to verify the encryption of the communication, I have monitored the packet flow with wireshark.
 
-The IP address of server is \textbf{192.168.0.53} and the IP address of client is \textbf{192.168.0.49}
+The IP address of the server is \textbf{192.168.0.53} and the IP address of the client is \textbf{192.168.0.49}
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.5]{./code/img/wireshark-iterative.png}
@@ -732,11 +731,11 @@ The IP address of server is \textbf{192.168.0.53} and the IP address of client i
     
 \end{figure}
 \subsubsection{Threaded program}
-The threaded program is a TLS and TCP chat for 10 clients at most. It's a client-server program where multiple clients get connected to the server with a TLS socket and a TCP socket; the two socket per client are used to show the difference, in the same program, between a communication with encryption and a communication without it.
+The threaded program is a TLS and TCP chat for 10 clients at most. It's a client-server program where multiple clients get connected to the server with a TLS socket and a TCP socket; the two sockets per client are used to show the difference, in the same program, between a communication with encryption and a communication without it.
 
 This program is a chat where clients can send messages to other clients; they can choose between a single private message and a public message visible to all clients. 
 
-To send a public message a client must only write a message with the keyboard and click enter. This message is sent with a TCP socket to a server; when the server receives a public message through a TCP socket, it sends the message to all TCP socket connected with it, creating a broadcast communication.
+To send a public message a client must only write a message with the keyboard and click enter. This message is sent with a TCP socket to the server; when the server receives a public message through a TCP socket, it sends the message to all TCP sockets connected with it, creating a broadcast communication.
 
 When a client wants to send a private message to a connected client, before the message it must put the '\#' symbol, followed by the id of the client. To see all the clients id, a client must send 'list' command. The private message is sent with a TLS socket.
 \subsubsection{Server threaded }
@@ -1306,10 +1305,10 @@ To execute a wolfSSL program you must have installed wolfSSL on your pc, and the
 In this program I used threads and ncurses so I had to add \textbf{-pthread} and \textbf{-lncurses} flags to gcc command; to optimize the compilation I created a makefile.
 
 \subsection{Execute a WolfSSL program (threaded program)}
-In my project I used a laptop for the client part, and a Raspberry Pi for the server part; they are connected to the same LAN (having only a pc on my home, the clients connected to the server will be on the same machine).
+In my project I used a laptop for the client part, and a Raspberry Pi for the server part; they are connected to the same LAN.
 In the pictures below you can see the GUI of the client and the server part, and the traffic analyze with wireshark.
-The IP address of server is \textbf{192.168.0.53}; the port for the TLS socket is \textbf{11111} and the port for the TCP socket is \textbf{11112}.
-The IP address of clients is \textbf{192.168.0.46}\\ mettere anche i nomi 
+The IP address of the server is \textbf{192.168.0.53}; the port for the TLS socket is \textbf{11111} and the port for the TCP socket is \textbf{11112}.
+The IP address of the clients is \textbf{192.168.0.46} because I only had a PC and a raspberry to test the program.
 
 \begin{figure}[H]
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -1426,7 +1425,7 @@ ______________________________________________________________|
 
 
 
-To test the exact function of the programs, I sent several messages.
+To test the exact functioning of the program, I sent several messages.
 \begin{figure}[H]
 \begin{Verbatim}[commandchars=\\\{\}]
 
@@ -1733,7 +1732,7 @@ Sending large amounts of data you can see the difference between them, but wolfS
 To compare the run-time memory occupation between openSSL and wolfSSL I used the linux task manager and valgrind. Using the task manager, the values aren't the exactly run-time memory occupation in a precise moment but the memory reserved by the operating system for the process; this allows me to do an estimation and a comparison among them.
 
 In this comparison I monitored the RSS and the VSZ:
-the RSS is the Resident Set Size and is used to show how much memory is allocated to that process and is in RAM. It does not include memory that is swapped out. It does include memory from shared libraries as long as the pages from those libraries are actually in memory. It does include all stack and heap memory.
+the RSS is the Resident Set Size and it is used to show how much memory is allocated to that process in RAM. It does not include memory that is swapped out. It includes memory from shared libraries as long as the pages from those libraries are actually in memory. It also includes all stack and heap memory.
 The VSZ is the Virtual Memory Size. It includes all memory that the process can access, including memory that is swapped out, memory that is allocated, but not used, and memory that is from shared libraries.
 
 The run-time memory occupation of the receive program (writefile function) is:
@@ -1749,7 +1748,8 @@ The run-time memory occupation of the receive program (writefile function) is:
 \end{tabular}
 \newline
 \newline
-With valgrind openSSL has the total heap usage: 23,947 allocs, 23,947 frees, 6,937,196 bytes allocated and wolfSSL the total heap usage: 104 allocs, 104 frees, 121,036 bytes allocated.
+With valgrind the total heap usage by openSSL is: 23,947 allocs, 23,947 frees, 6,937,196 bytes allocated.
+The total heap usage by wolfSSL is: 104 allocs, 104 frees, 121,036 bytes allocated.
 
 Even in a small program the difference is relevant.
 

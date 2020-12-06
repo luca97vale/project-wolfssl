@@ -1,5 +1,5 @@
 # Project-wolfssl
-In this repo you can find a simple wolfSSL chat, a TCP chat and a openSSL or wolfSSL send file program.
+In this repo you can find an iterative and a threaded wolfSSL chat, a TCP chat and a openSSL or wolfSSL send file program.
 
 # WolfSSL chat
 In this project, to create executable file you have to install wolfSSL and ncurses
